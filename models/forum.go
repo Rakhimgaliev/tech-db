@@ -5,5 +5,5 @@ type Forum struct {
 	User    string `json:"user"`
 	Slug    string `json:"slug"`
 	Posts   int64  `json:"posts,omitempty"`
-	Threads int    `json:"threads,omitempty"`
+	Threads int32  `json:"threads,omitempty"`
 }
