@@ -34,4 +34,6 @@ RUN echo "host all all 0.0.0.0/0 md5" >> /etc/postgresql/$PGVER/main/pg_hba.conf
     echo "unix_socket_directories = '/var/run/postgresql'" >> /etc/postgresql/$PGVER/main/postgresql.conf
 EXPOSE 5432
 
+VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
+
 CMD service postgresql start && forum-server -port=5000  -db=postgres://docker:docker@localhost/docker
