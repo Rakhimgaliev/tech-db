@@ -4,6 +4,7 @@ LABEL name="Rakhimgaliyev Temirlan"
 LABEL email="rakhimgaliev56@gmail.com"
 
 ENV TZ=Europe/Moscow
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 USER root
 RUN apt update
