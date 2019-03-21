@@ -16,7 +16,6 @@ ADD . $GOPATH/src/github.com/Rakhimgaliev/tech-db-forum/
 # RUN go install .
 EXPOSE 5000
 
-RUN apt install postgresql postgresql-contrib
 ENV POSTGRESQLVERSION 10
 RUN apt install -y postgresql-$POSTGRESQLVERSION
 
