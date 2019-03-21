@@ -3,6 +3,8 @@ FROM ubuntu:18.04
 LABEL name="Rakhimgaliyev Temirlan"
 LABEL email="rakhimgaliev56@gmail.com"
 
+ENV TZ=Europe/Moscow
+
 USER root
 RUN apt update
 RUN apt install -y golang-1.10
