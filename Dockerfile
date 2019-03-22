@@ -9,17 +9,15 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 USER root
 RUN apt update
 RUN apt install -y golang-1.10
+RUN apt install -y git
 
-RUN ls /opt
-RUN ls ~
-
-ENV GOROOT /user/lib/go-1.10
-ENV GOPATH /opt/go
-ENV PATH $GOROOT/bin:$GOPATH/bin:/usr/local/go/bin:$PATH
+# ENV GOROOT /user/lib/go-1.10
+# ENV GOPATH /opt/go
+# ENV PATH $GOROOT/bin:$GOPATH/bin:/usr/local/go/bin:$PATH
 
 WORKDIR $GOPATH/src/github.com/Rakhimgaliev/tech-db-forum/
 ADD . $GOPATH/src/github.com/Rakhimgaliev/tech-db-forum/
-RUN go build ./forum/main
+RUN go install ./forum/main
 EXPOSE 5000
 
 ENV POSTGRESQLVERSION 10
