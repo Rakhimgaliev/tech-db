@@ -16,7 +16,7 @@ ENV PATH $GOROOT/bin:$GOPATH/bin:/usr/local/go/bin:$PATH
 
 WORKDIR $GOPATH/src/github.com/Rakhimgaliev/tech-db-forum/
 ADD . $GOPATH/src/github.com/Rakhimgaliev/tech-db-forum/
-# RUN go install .
+RUN go install .
 EXPOSE 5000
 
 ENV POSTGRESQLVERSION 10
@@ -38,4 +38,4 @@ EXPOSE 5432
 
 VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
 
-CMD service postgresql start && forum-server -port=5000  -db=postgres://docker:docker@localhost/docker
+CMD service postgresql start && . -port=5000  -db=postgres://docker:docker@localhost/docker
