@@ -17,7 +17,7 @@ CREATE TABLE "user" (
                         -- Сравнение имени регистронезависимо.
     fullname    text    not null,   -- Полное имя пользователя.
     about       text,   -- Описание пользователя.
-    email       citext  primary key,    -- Почтовый адрес пользователя (уникальное поле).
+    email       citext  primary key    -- Почтовый адрес пользователя (уникальное поле).
 );
 
 CREATE TABLE forum (
