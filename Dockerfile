@@ -11,12 +11,8 @@ RUN apt update
 RUN apt install -y golang-1.10
 RUN apt install -y git
 
-# ENV GOROOT /usr/lib/go-1.10
-RUN mkdir -p ~/go
-RUN mkdir -p ~/go/bin
-RUN mkdir -p ~/go/pkg
-
-ENV GOPATH ~/go
+ENV GOROOT /usr/lib/go-1.10
+ENV GOPATH /opt/go
 ENV PATH $GOROOT/bin:$GOPATH/bin:/usr/local/go/bin:$PATH
 
 WORKDIR $GOPATH/src/github.com/Rakhimgaliev/tech-db-forum/
