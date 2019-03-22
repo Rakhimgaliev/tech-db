@@ -44,4 +44,5 @@ EXPOSE 5000
 
 # CMD service postgresql start && go run ./forum/main -port=5000  -db=postgres://docker:docker@localhost/docker
 
-CMD go run ./forum/main
+WORKDIR $GOPATH/bin/
+CMD main
