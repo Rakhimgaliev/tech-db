@@ -15,10 +15,10 @@ RUN apt install -y git
 # ENV GOPATH /opt/go
 # ENV PATH $GOROOT/bin:$GOPATH/bin:/usr/local/go/bin:$PATH
 
-WORKDIR $GOPATH/src/github.com/Rakhimgaliev/tech-db-forum/
-ADD . $GOPATH/src/github.com/Rakhimgaliev/tech-db-forum/
-RUN go install ./forum/main
-EXPOSE 5000
+# WORKDIR $GOPATH/src/github.com/Rakhimgaliev/tech-db-forum/
+# ADD . $GOPATH/src/github.com/Rakhimgaliev/tech-db-forum/
+# RUN go install ./forum/main
+# EXPOSE 5000
 
 ENV POSTGRESQLVERSION 10
 RUN apt install -y postgresql-$POSTGRESQLVERSION
