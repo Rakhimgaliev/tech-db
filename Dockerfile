@@ -10,8 +10,8 @@ USER root
 RUN apt update
 RUN apt install -y golang-1.10
 
-run ls /opt
-run ls ~
+RUN ls /opt
+RUN ls ~
 
 ENV GOROOT /user/lib/go-1.10
 ENV GOPATH /opt/go
