@@ -39,4 +39,4 @@ EXPOSE 5432
 
 VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
 
-CMD service postgresql start && main -port=5000  -db=postgres://docker:docker@localhost/docker
+CMD service postgresql start && go run ./forum/main -port=5000  -db=postgres://docker:docker@localhost/docker
