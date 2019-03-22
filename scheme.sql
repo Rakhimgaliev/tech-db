@@ -23,7 +23,7 @@ CREATE TABLE "user" (
 CREATE TABLE forum (
     title   text    not null,   -- Название форума.
     userNickname    citext  references  "user", -- Nickname пользователя, который отвечает за форум.
-    slug    text    not null,   -- Человекопонятный URL (https://ru.wikipedia.org/wiki/%D0%A1%D0%B5%D0%BC%D0%B0%D0%BD%D1%82%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B8%D0%B9_URL), уникальное поле.
+    slug    text    primary key,   -- Человекопонятный URL (https://ru.wikipedia.org/wiki/%D0%A1%D0%B5%D0%BC%D0%B0%D0%BD%D1%82%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B8%D0%B9_URL), уникальное поле.
     posts   bigint, -- Общее кол-во сообщений в данном форуме.
     threads bigint  -- Общее кол-во ветвей обсуждения в данном форуме.
 );
@@ -48,7 +48,7 @@ CREATE TABLE POST (
     edited  boolean default false,
     forum   citext  references forum,
     thread  integer references thread,
-    created timestamp with time default now()
+    created timestamp with time zone default now()
 );
 
 CREATE TABLE VOTE (
