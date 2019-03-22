@@ -16,7 +16,7 @@ ENV PATH $GOROOT/bin:$GOPATH/bin:/usr/local/go/bin:$PATH
 
 WORKDIR $GOPATH/src/github.com/Rakhimgaliev/tech-db-forum/
 ADD . $GOPATH/src/github.com/Rakhimgaliev/tech-db-forum/
-RUN go install src
+RUN go install ./src
 EXPOSE 5000
 
 ENV POSTGRESQLVERSION 10
