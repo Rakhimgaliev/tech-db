@@ -1,13 +1,16 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 
-	_ "github.com/cockroachdb/apd"
+	"github.com/Rakhimgaliev/tech-db-forum/models"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx"
+
+	_ "github.com/cockroachdb/apd"
 	_ "github.com/hashicorp/go-version"
 	_ "github.com/jackc/fake"
-	"github.com/jackc/pgx"
 	_ "github.com/lib/pq"
 	_ "github.com/pkg/errors"
 	_ "github.com/satori/go.uuid"
@@ -30,13 +33,12 @@ func main() {
 
 	pgxConnPoolConfig := pgx.ConnPoolConfig{pgxConfig, 3, nil, 0}
 
-	_, err := pgx.NewConnPool(pgxConnPoolConfig)
+	conn, err := pgx.NewConnPool(pgxConnPoolConfig)
 
 	if err != nil {
 		log.Fatal(err)
 	} else {
 		log.Println("YEEH")
-		return
 	}
 
 	r := gin.Default()
@@ -98,9 +100,10 @@ func main() {
 	})
 
 	r.GET("/service/status", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"description": `Получение инфомарции о базе данных`,
-		})
+		var status models.Status
+		Status(conn, &status)
+		answer, _ := json.Marshal(status)
+		c.JSON(200, string(answer))
 	})
 
 	r.POST("/thread/:slug_or_id/create", func(c *gin.Context) {
