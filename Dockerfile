@@ -24,11 +24,11 @@ ENV POSTGRESQLVERSION 10
 RUN apt install -y postgresql-$POSTGRESQLVERSION
 
 USER postgres
-RUN service postgresql start
-RUN psql --command "CREATE USER docker WITH SUPERUSER PASSWORD 'docker';"
-RUN createdb -O docker docker
-RUN psql docker -a -f scheme.sql
-RUN service postgresql stop
+RUN /etc/init.d/postgresql start &&\
+    psql --command "CREATE USER docker WITH SUPERUSER PASSWORD 'docker';" &&\
+    createdb -O docker docker &&\
+    psql docker -a -f scheme.sql &&\
+    /etc/init.d/postgresql stop
 
 USER root
 RUN echo "host all all 0.0.0.0/0 md5" >> /etc/postgresql/$POSTGRESQLVERSION/main/pg_hba.conf &&\
