@@ -1,10 +1,44 @@
 package main
 
 import (
+	"log"
+
+	_ "github.com/cockroachdb/apd"
 	"github.com/gin-gonic/gin"
+	_ "github.com/hashicorp/go-version"
+	_ "github.com/jackc/fake"
+	"github.com/jackc/pgx"
+	_ "github.com/lib/pq"
+	_ "github.com/pkg/errors"
+	_ "github.com/satori/go.uuid"
+	_ "github.com/shopspring/decimal"
+	_ "github.com/sirupsen/logrus"
+	_ "go.uber.org/zap"
+	_ "gopkg.in/inconshreveable/log15.v2"
 )
 
+var pgxConfig = pgx.ConnConfig{
+	Host:     "localhost",
+	Port:     5432,
+	Database: "docker",
+	User:     "docker",
+	Password: "docker",
+}
+
 func main() {
+	log.Println("start")
+
+	pgxConnPoolConfig := pgx.ConnPoolConfig{pgxConfig, 3, nil, 0}
+
+	_, err := pgx.NewConnPool(pgxConnPoolConfig)
+
+	if err != nil {
+		log.Fatal(err)
+	} else {
+		log.Println("YEEH")
+		return
+	}
+
 	r := gin.Default()
 	r.POST("/forum/:slug", func(c *gin.Context) {
 		if c.Param("slug") == "create" {
@@ -31,7 +65,7 @@ func main() {
 
 	r.GET("/forum/:slug/users", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"description": 	`Получение списка пользователей, у которых есть пост или ветка обсуждения в данном форуме.
+			"description": `Получение списка пользователей, у которых есть пост или ветка обсуждения в данном форуме.
 								Пользователи выводятся отсортированные по nickname в порядке возрастания.
 								Порядок сотрировки должен соответсвовать побайтовому сравнение в нижнем регистре.`,
 		})
