@@ -7,7 +7,7 @@ ENV TZ=Europe/Moscow
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 USER root
-RUN apt update
+RUN apt-get -y update && apt-get install -y --no-install-recommends apt-utils
 RUN apt install -y golang-1.10
 RUN apt install -y git
 
