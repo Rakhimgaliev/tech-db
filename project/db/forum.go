@@ -34,7 +34,7 @@ const (
 )
 
 func CreateForum(conn *pgx.ConnPool, forum *models.Forum) error {
-	err := conn.QueryRow(createForum, forum.User, forum.Slug, forum.Title).Scan(*forum)
+	err := conn.QueryRow(createForum, (*forum).User, (*forum).Slug, (*forum).Title).Scan(*forum)
 	log.Println(err)
 
 	if err != nil {
@@ -53,7 +53,7 @@ func CreateForum(conn *pgx.ConnPool, forum *models.Forum) error {
 }
 
 func GetForumBySlug(conn *pgx.ConnPool, forum *models.Forum) error {
-	err := conn.QueryRow(getForum, forum.Slug).Scan(forum)
+	err := conn.QueryRow(getForum, forum.Slug).Scan(*forum)
 	if err == pgx.ErrNoRows {
 		return ErrorForumNotFound
 	}

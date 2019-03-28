@@ -1,6 +1,7 @@
 package main
 
 // go install ./project/main/ && ../../../../bin/main
+// curl -d --header "Content-Type: application/json" --request POST http://localhost:5000/forum/create --data '{"title":"Pirate","user":"j.sparrow","slug":"pirate-stories"}'
 
 import (
 	"github.com/Rakhimgaliev/tech-db-forum/project/handler"
