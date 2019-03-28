@@ -17,11 +17,12 @@ var (
 
 const (
 	createForum = `
-		INSERT INTO forum (userNickname, slug, title) 
-			VALUES 
-			((SELECT u.nickname FROM "user" u WHERE u.nickname = $1),
-			$2, $3)
-			RETURNING userNickname, slug, title, postCount, threadCount
+		INSERT INTO forum (title, userNickname, slug) 
+			VALUES (
+			$1,
+			(SELECT u.nickname FROM "user" u WHERE u.nickname = $2),
+			$3)
+			RETURNING title, userNickname, slug, postCount, threadCount
 		`
 
 	getForumBySlug = `SELECT FROM forum WHERE slug = $1`
@@ -34,16 +35,17 @@ const (
 )
 
 func CreateForum(conn *pgx.ConnPool, forum *models.Forum) error {
-	err := conn.QueryRow(createForum, (*forum).User, (*forum).Slug, (*forum).Title).Scan(*forum)
+	err := conn.QueryRow(createForum, (*forum).Title, (*forum).User, (*forum).Slug).
+		Scan(&(*forum).Title, &(*forum).User, &(*forum).Slug, &(*forum).Posts, &(*forum).Threads)
 	log.Println(err)
 
 	if err != nil {
 		if pqError, ok := err.(pgx.PgError); ok {
 			switch pqError.Code {
 			case PgxErrorUniqueViolation:
-				return ErrorUserNotFound
-			case PgxErrorCodeNotNullViolation:
 				return ErrorForumAlreadyExists
+			case PgxErrorCodeNotNullViolation:
+				return ErrorUserNotFound
 			}
 		}
 		return err

@@ -21,6 +21,7 @@ func (h handler) CreateForum(context *gin.Context) {
 
 	err = db.CreateForum(h.conn, forum)
 	if err != nil {
+		log.Println(err)
 		switch err {
 		case db.ErrorUserNotFound:
 			context.JSON(404, err)
@@ -41,5 +42,5 @@ func (h handler) CreateForum(context *gin.Context) {
 	}
 
 	forumJSON, _ := json.Marshal(forum)
-	context.JSON(200, string(forumJSON))
+	context.JSON(201, string(forumJSON))
 }

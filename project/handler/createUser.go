@@ -34,7 +34,7 @@ func (h handler) CreateUser(context *gin.Context) {
 	}
 
 	userJSON, _ := json.Marshal(user)
-	context.JSON(200, string(userJSON))
+	context.JSON(201, string(userJSON))
 }
 
 func (h handler) GetUserBySlug(context *gin.Context) {
