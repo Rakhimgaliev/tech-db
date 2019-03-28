@@ -1,10 +1,8 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
 
-	"github.com/Rakhimgaliev/tech-db-forum/models"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx"
 
@@ -31,9 +29,9 @@ var pgxConfig = pgx.ConnConfig{
 func main() {
 	log.Println("start")
 
-	pgxConnPoolConfig := pgx.ConnPoolConfig{pgxConfig, 3, nil, 0}
+	ConnPoolConfig := pgx.ConnPoolConfig{pgxConfig, 3, nil, 0}
 
-	conn, err := pgx.NewConnPool(pgxConnPoolConfig)
+	conn, err := pgx.NewConnPool(ConnPoolConfig)
 
 	if err != nil {
 		log.Fatal(err)
@@ -100,10 +98,7 @@ func main() {
 	})
 
 	r.GET("/service/status", func(c *gin.Context) {
-		var status models.Status
-		Status(conn, &status)
-		answer, _ := json.Marshal(status)
-		c.JSON(200, string(answer))
+		Status(c, conn)
 	})
 
 	r.POST("/thread/:slug_or_id/create", func(c *gin.Context) {

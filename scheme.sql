@@ -6,11 +6,6 @@ DROP TABLE IF EXISTS thread;
 DROP TABLE IF EXISTS post;
 DROP TABLE IF EXISTS vote;
 
--- primary key = not null + unique
--- reference -> post(id), if id=primaryKey for post then
--- you can write reference -> post
-
-
 CREATE TABLE "user" (
     nickname    citext, -- Имя пользователя (уникальное поле).
                         -- Данное поле допускает только латиницу, цифры и знак подчеркивания.
@@ -22,16 +17,16 @@ CREATE TABLE "user" (
 
 CREATE TABLE forum (
     title   text    not null,   -- Название форума.
-    userNickname    citext  references  "user", -- Nickname пользователя, который отвечает за форум.
+    userNickname    citext  references "user",  -- Nickname пользователя, который отвечает за форум.
     slug    text    primary key,   -- Человекопонятный URL (https://ru.wikipedia.org/wiki/%D0%A1%D0%B5%D0%BC%D0%B0%D0%BD%D1%82%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B8%D0%B9_URL), уникальное поле.
-    posts   bigint, -- Общее кол-во сообщений в данном форуме.
-    threads bigint  -- Общее кол-во ветвей обсуждения в данном форуме.
+    postCount   bigint  default 0 not null, -- Общее кол-во сообщений в данном форуме.
+    threadCount bigint  default 0 not null  -- Общее кол-во ветвей обсуждения в данном форуме.
 );
 
 CREATE TABLE thread (
     id      integer primary key,    -- Идентификатор ветки обсуждения.
     title   text    not null,   -- Заголовок ветки обсуждения.
-    author  citext  references "user",   -- Пользователь, создавший данную тему.
+    userNickname    citext  references "user",   -- Пользователь, создавший данную тему.
     forum   citext  references forum,   -- Форум, в котором расположена данная ветка обсуждения.
     message text    not null,   -- Описание ветки обсуждения.
     votes   integer,    -- Кол-во голосов непосредственно за данное сообщение форума.
@@ -40,10 +35,10 @@ CREATE TABLE thread (
     created timestamp with time zone default now()  not null -- Дата создания ветки на форуме.
 );
 
-CREATE TABLE POST (
+CREATE TABLE post (
     id      bigserial   primary key,
     parent  bigint  references post,
-    author  citext  references "user",
+    userNickname    citext  references "user",
     message text    not null,
     edited  boolean default false,
     forum   citext  references forum,
@@ -51,7 +46,20 @@ CREATE TABLE POST (
     created timestamp with time zone default now()
 );
 
-CREATE TABLE VOTE (
+CREATE TABLE vote (
     nickname    citext  references "user",
     voice   integer not null
+);
+
+
+CREATE TABLE forum_user (
+    nickname    citext  references "user",
+    forum   citext  references forum,
+    CONSTRAINT  uniqueForumUser UNIQUE (nickname, forum)
+);
+
+CREATE TABLE forum_thread (
+    thread  citext  references thread,
+    forum   citext  references forum,
+    CONSTRAINT  uniqueForumUser UNIQUE (thread, forum)
 );
