@@ -10,9 +10,9 @@ import (
 )
 
 var (
-	ErrorUserNotFound      = errors.New("User not found")
-	ErrorForumAlreadyExist = errors.New("Forum already exists")
-	ErrorForumNotFound     = errors.New("Forum not found")
+	ErrorUserNotFound       = errors.New("User not found")
+	ErrorForumAlreadyExists = errors.New("Forum already exists")
+	ErrorForumNotFound      = errors.New("Forum not found")
 )
 
 const (
@@ -24,7 +24,7 @@ const (
 			RETURNING userNickname, slug, title, postCount, threadCount
 		`
 
-	getForum = `SELECT FROM forum WHERE slug = $1`
+	getForumBySlug = `SELECT FROM forum WHERE slug = $1`
 )
 
 const (
@@ -43,7 +43,7 @@ func CreateForum(conn *pgx.ConnPool, forum *models.Forum) error {
 			case PgxErrorUniqueViolation:
 				return ErrorUserNotFound
 			case PgxErrorCodeNotNullViolation:
-				return ErrorForumAlreadyExist
+				return ErrorForumAlreadyExists
 			}
 		}
 		return err
@@ -53,7 +53,7 @@ func CreateForum(conn *pgx.ConnPool, forum *models.Forum) error {
 }
 
 func GetForumBySlug(conn *pgx.ConnPool, forum *models.Forum) error {
-	err := conn.QueryRow(getForum, forum.Slug).Scan(*forum)
+	err := conn.QueryRow(getForumBySlug, forum.Slug).Scan(*forum)
 	if err == pgx.ErrNoRows {
 		return ErrorForumNotFound
 	}

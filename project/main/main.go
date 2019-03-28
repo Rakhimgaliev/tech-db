@@ -22,14 +22,8 @@ func main() {
 
 	handler := handler.NewConnPool(&dbConfig)
 
-	// router.POST("/forum/:slug", func(context *gin.Context) {
-	// 	if context.Param("slug") == "create" {
-	// 		handler.CreateForum(context)
-	// 		return
-	// 	}
-	// })
-
 	router.POST("/forum/create", handler.CreateForum)
+	router.POST("/user/:nickname/create", handler.CreateUser)
 
 	// router.POST("/forum/", func(c *gin.Context) {
 	// 	if c.Param("slug") == "create" {

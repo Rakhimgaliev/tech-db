@@ -25,7 +25,7 @@ func (h handler) CreateForum(context *gin.Context) {
 		case db.ErrorUserNotFound:
 			context.JSON(404, err)
 			return
-		case db.ErrorForumAlreadyExist:
+		case db.ErrorForumAlreadyExists:
 			err := db.GetForumBySlug(h.conn, forum)
 			if err != nil {
 				context.JSON(500, err)
