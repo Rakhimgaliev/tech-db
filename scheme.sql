@@ -7,10 +7,10 @@ DROP TABLE IF EXISTS post;
 DROP TABLE IF EXISTS vote;
 
 CREATE TABLE "user" (
-    nickname    citext,
+    nickname    citext  primary key,
     fullname    text    not null,
     about       text,
-    email       citext  primary key
+    email       citext  unique  not null
 );
 
 CREATE TABLE forum (

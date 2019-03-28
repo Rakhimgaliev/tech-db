@@ -12,7 +12,7 @@ import (
 func (h handler) CreateUser(context *gin.Context) {
 	user := &models.User{}
 
-	err := context.BindJSON(&user)
+	err := context.BindJSON(user)
 	if err != nil {
 		log.Println(err)
 		return
@@ -22,16 +22,13 @@ func (h handler) CreateUser(context *gin.Context) {
 	err = db.CreateUser(h.conn, user)
 	if err != nil {
 		if err == db.ErrorUserAlreadyExists {
-			err := db.GetUserByNickname(h.conn, user)
-			if err != nil {
-				context.JSON(500, err)
-				return
-			}
+			err = db.GetUserByNickname(h.conn, user)
 			userJSON, _ := json.Marshal(user)
 			context.JSON(409, string(userJSON))
 			return
 		} else {
 			context.JSON(500, err)
+			log.Println(err)
 			return
 		}
 	}

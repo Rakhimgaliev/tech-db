@@ -14,16 +14,17 @@ var (
 
 const (
 	createUser = `
-		INSERT INTO user (nickname, fullname, about, email) 
+		INSERT INTO "user" (nickname, fullname, about, email) 
 			VALUES ($1, $2, $3, $4)
-			RETURNING (nickname, fullname, about, email) 
+			RETURNING nickname, fullname, about, email
 		`
 
 	getUserByNickname = `SELECT FROM user WHERE nickname = $1`
 )
 
 func CreateUser(conn *pgx.ConnPool, user *models.User) error {
-	err := conn.QueryRow(createUser, (*user).Nickname, (*user).Fullname, (*user).About, (*user).Email).Scan(*user)
+	err := conn.QueryRow(createUser, (*user).Nickname, (*user).Fullname, (*user).About, (*user).Email).
+		Scan(&(*user).Nickname, &(*user).Fullname, &(*user).About, &(*user).Email)
 	log.Println(err)
 
 	if err != nil {
