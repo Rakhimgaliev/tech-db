@@ -1,5 +1,7 @@
 package main
 
+// go install ./project/main/ && ../../../../bin/main
+
 import (
 	"github.com/Rakhimgaliev/tech-db-forum/project/handler"
 	"github.com/gin-gonic/gin"
