@@ -17,14 +17,14 @@ var (
 
 const (
 	createForum = `
-		INSERT INTO forum (user_nick, slug, title) 
+		INSERT INTO forum (userNickname, slug, title) 
 			VALUES 
 			((SELECT u.nickname FROM "user" u WHERE u.nickname = $1),
 			$2, $3)
 			RETURNING userNickname, slug, title, postCount, threadCount
 		`
 
-	getForum = `SELECT FROM forum WHERE slig = $1`
+	getForum = `SELECT FROM forum WHERE slug = $1`
 )
 
 const (
@@ -34,7 +34,7 @@ const (
 )
 
 func CreateForum(conn *pgx.ConnPool, forum *models.Forum) error {
-	err := conn.QueryRow(createForum, forum.User, forum.Slug, forum.Title).Scan(forum)
+	err := conn.QueryRow(createForum, forum.User, forum.Slug, forum.Title).Scan(*forum)
 	log.Println(err)
 
 	if err != nil {

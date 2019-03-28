@@ -55,8 +55,3 @@ CREATE TABLE forum_user (
     CONSTRAINT  uniqueForumUser UNIQUE (nickname, forum)
 );
 
-CREATE TABLE forum_thread (
-    thread  citext  references thread,
-    forum   citext  references forum,
-    CONSTRAINT  uniqueForumThread UNIQUE (thread, forum)
-);
