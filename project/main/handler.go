@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 
-	"github.com/Rakhimgaliev/tech-db-forum/models"
+	"github.com/Rakhimgaliev/tech-db-forum/project/models"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx"
 )
