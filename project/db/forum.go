@@ -25,7 +25,9 @@ const (
 			RETURNING title, userNickname, slug, postCount, threadCount
 		`
 
-	getForumBySlug = `SELECT FROM forum WHERE slug = $1`
+	getForumBySlug = `
+		SELECT title, userNickname, slug, postCount, threadCount
+			FROM forum WHERE slug = $1`
 )
 
 const (
@@ -55,7 +57,9 @@ func CreateForum(conn *pgx.ConnPool, forum *models.Forum) error {
 }
 
 func GetForumBySlug(conn *pgx.ConnPool, forum *models.Forum) error {
-	err := conn.QueryRow(getForumBySlug, forum.Slug).Scan(*forum)
+	err := conn.QueryRow(getForumBySlug, (*forum).Slug).
+		Scan(&(*forum).Title, &(*forum).User, &(*forum).Slug, &(*forum).Posts, &(*forum).Threads)
+	log.Println(err)
 	if err == pgx.ErrNoRows {
 		return ErrorForumNotFound
 	}

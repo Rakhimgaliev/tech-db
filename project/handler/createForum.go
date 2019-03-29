@@ -44,3 +44,20 @@ func (h handler) CreateForum(context *gin.Context) {
 	forumJSON, _ := json.Marshal(forum)
 	context.JSON(201, string(forumJSON))
 }
+
+func (h handler) GetForum(context *gin.Context) {
+	forum := &models.Forum{}
+	forum.Slug = context.Param("slug")
+
+	err := db.GetForumBySlug(h.conn, forum)
+	if err != nil {
+		if err == db.ErrorForumNotFound {
+			context.JSON(404, err)
+			return
+		}
+		context.JSON(500, err)
+		return
+	}
+	forumJSON, _ := json.Marshal(forum)
+	context.JSON(200, string(forumJSON))
+}

@@ -26,6 +26,7 @@ func main() {
 
 	router.POST("/forum/create", handler.CreateForum)
 	router.POST("/user/:nickname/create", handler.CreateUser)
+	router.GET("/forum/:slug/details", handler.GetForum)
 
 	// router.POST("/forum/", func(c *gin.Context) {
 	// 	if c.Param("slug") == "create" {
@@ -35,12 +36,6 @@ func main() {
 	// 	}
 	// 	c.JSON(200, gin.H{
 	// 		"description": `hz`,
-	// 	})
-	// })
-
-	// router.GET("/forum/:slug/details", func(c *gin.Context) {
-	// 	c.JSON(200, gin.H{
-	// 		"description": `Получение информации о форуме по его идентификаторе.`,
 	// 	})
 	// })
 
