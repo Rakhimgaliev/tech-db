@@ -19,12 +19,18 @@ const (
 			RETURNING nickname, fullname, about, email
 		`
 
-	getUserByNickname = `SELECT FROM user WHERE nickname = $1`
+	getUserByEmail = `
+		SELECT nickname, fullname, about, email
+			FROM "user" WHERE email = $1`
+
+	getUserByNickname = `
+		SELECT nickname, fullname, about, email
+			FROM "user" WHERE nickname = $1`
 )
 
 func CreateUser(conn *pgx.ConnPool, user *models.User) error {
 	err := conn.QueryRow(createUser, (*user).Nickname, (*user).Fullname, (*user).About, (*user).Email).
-		Scan(&(*user).Nickname, &(*user).Fullname, &(*user).About, &(*user).Email)
+		Scan(&user.Nickname, &user.Fullname, &user.About, &user.Email)
 	log.Println(err)
 
 	if err != nil {
@@ -39,12 +45,24 @@ func CreateUser(conn *pgx.ConnPool, user *models.User) error {
 	return nil
 }
 
-func GetUserByNickname(conn *pgx.ConnPool, user *models.User) error {
-
-	err := conn.QueryRow(getUserByNickname, (*user).Nickname).Scan(*user)
+func GetUserByEmail(conn *pgx.ConnPool, user *models.User) error {
+	err := conn.QueryRow(getUserByEmail, user.Email).
+		Scan(&user.Nickname, &user.Fullname, &user.About, &user.Email)
 	log.Println(err)
 
-	if err != pgx.ErrNoRows {
+	if err == pgx.ErrNoRows {
+		return ErrorUserNotFound
+	}
+
+	return nil
+}
+
+func GetUserByNickname(conn *pgx.ConnPool, user *models.User) error {
+	err := conn.QueryRow(getUserByNickname, user.Nickname).
+		Scan(&user.Nickname, &user.Fullname, &user.About, &user.Email)
+	log.Println(err)
+
+	if err == pgx.ErrNoRows {
 		return ErrorUserNotFound
 	}
 

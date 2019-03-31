@@ -24,9 +24,11 @@ func main() {
 
 	handler := handler.NewConnPool(&dbConfig)
 
-	router.POST("/forum/create", handler.CreateForum)
-	router.POST("/user/:nickname/create", handler.CreateUser)
-	router.GET("/forum/:slug/details", handler.GetForum)
+	router.POST("/api/forum/create", handler.CreateForum)
+	router.GET("/api/forum/:slug/details", handler.GetForum)
+
+	router.POST("/api/user/:nickname/create", handler.CreateUser)
+	router.GET("/api/user/:nickname/profile", handler.GetUser)
 
 	// router.POST("/forum/", func(c *gin.Context) {
 	// 	if c.Param("slug") == "create" {
