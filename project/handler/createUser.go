@@ -22,9 +22,16 @@ func (h handler) CreateUser(context *gin.Context) {
 	err = db.CreateUser(h.conn, user)
 	if err != nil {
 		if err == db.ErrorUserAlreadyExists {
-			err = db.GetUserByEmail(h.conn, user)
-			userJSON, _ := json.Marshal(user)
-			context.Data(409, "application/json", userJSON)
+			users, err := db.GetUserByEmailOrNickname(h.conn, user.Email, user.Nickname)
+			if err != nil {
+				context.JSON(500, "")
+			}
+			usersJSON, err := json.Marshal(users)
+			if err != nil {
+				context.JSON(500, "")
+			}
+
+			context.Data(409, "application/json", usersJSON)
 			return
 		} else {
 			context.JSON(500, err)
@@ -54,4 +61,7 @@ func (h handler) GetUser(context *gin.Context) {
 
 	userJSON, _ := json.Marshal(user)
 	context.Data(200, "application/json", userJSON)
+}
+
+func (h handler) UpdateUser(context *gin.Context) {
 }

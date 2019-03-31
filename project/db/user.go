@@ -19,13 +19,13 @@ const (
 			RETURNING nickname, fullname, about, email
 		`
 
-	getUserByEmail = `
-		SELECT nickname, fullname, about, email
-			FROM "user" WHERE email = $1`
-
 	getUserByNickname = `
 		SELECT nickname, fullname, about, email
 			FROM "user" WHERE nickname = $1`
+
+	getUserByEmailOrNickname = `
+		SELECT nickname, fullname, about, email
+			FROM "user" WHERE email = $1 OR nickname = $2`
 )
 
 func CreateUser(conn *pgx.ConnPool, user *models.User) error {
@@ -45,16 +45,30 @@ func CreateUser(conn *pgx.ConnPool, user *models.User) error {
 	return nil
 }
 
-func GetUserByEmail(conn *pgx.ConnPool, user *models.User) error {
-	err := conn.QueryRow(getUserByEmail, user.Email).
-		Scan(&user.Nickname, &user.Fullname, &user.About, &user.Email)
-	log.Println(err)
-
-	if err == pgx.ErrNoRows {
-		return ErrorUserNotFound
+func GetUserByEmailOrNickname(conn *pgx.ConnPool, email string, nickname string) (models.Users, error) {
+	rows, err := conn.Query(getUserByEmailOrNickname, email, nickname)
+	defer rows.Close()
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	users := models.Users{}
+	for rows.Next() {
+		user := models.User{}
+		err := rows.Scan(
+			&user.Nickname,
+			&user.Fullname,
+			&user.About,
+			&user.Email,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		users = append(users, &user)
+	}
+	return users, nil
 }
 
 func GetUserByNickname(conn *pgx.ConnPool, user *models.User) error {
@@ -65,6 +79,5 @@ func GetUserByNickname(conn *pgx.ConnPool, user *models.User) error {
 	if err == pgx.ErrNoRows {
 		return ErrorUserNotFound
 	}
-
 	return nil
 }
