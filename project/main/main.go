@@ -1,9 +1,9 @@
 package main
 
 // go install ./project/main/ && ../../../../bin/main
-// curl -d --header "Content-Type: application/json" --request POST http://localhost:5000/forum/create --data '{"title":"Pirate","user":"j.sparrow","slug":"pirate-stories"}'
-// curl --header "Content-Type: application/json"   --request POST   --data '{"title":"qsweqwe","user":"asdaads","slug":"fgdfg"}'   http://localhost:5000/forum/create
-// curl --header "Content-Type: application/json"   --request POST   --data '{"fullname":"qsweqwe","about":"asdaads","email":"jashhasd@mail.ru"}'   http://localhost:5000/user/teuumikr/create
+// curl -d --header "Content-Type: application/json" --request POST http://localhost:5000/api/forum/create --data '{"title":"Pirate","user":"j.sparrow","slug":"pirate-stories"}'
+// curl --header "Content-Type: application/json"   --request POST   --data '{"title":"qsweqwe","user":"asdaads","slug":"fgdfg"}'   http://localhost:5000/api/forum/create
+// curl --header "Content-Type: application/json"   --request POST   --data '{"fullname":"qsweqwe","about":"asdaads","email":"jashhasd@mail.ru"}'   http://localhost:5000/api/user/teuumikr/create
 
 import (
 	"github.com/Rakhimgaliev/tech-db-forum/project/handler"
@@ -29,6 +29,7 @@ func main() {
 
 	router.POST("/api/user/:nickname/create", handler.CreateUser)
 	router.GET("/api/user/:nickname/profile", handler.GetUser)
+	router.POST("/api/user/:nickname/profile", handler.UpdateUser)
 
 	// router.POST("/forum/", func(c *gin.Context) {
 	// 	if c.Param("slug") == "create" {

@@ -26,10 +26,16 @@ const (
 	getUserByEmailOrNickname = `
 		SELECT nickname, fullname, about, email
 			FROM "user" WHERE email = $1 OR nickname = $2`
+
+	updateUserCommand = `
+		UPDATE "user"
+			SET fullname = $2, about = $3, email = $4
+			WHERE nickname = $1
+			RETURNING nickname, fullname, about, email`
 )
 
 func CreateUser(conn *pgx.ConnPool, user *models.User) error {
-	err := conn.QueryRow(createUser, (*user).Nickname, (*user).Fullname, (*user).About, (*user).Email).
+	err := conn.QueryRow(createUser, user.Nickname, user.Fullname, user.About, user.Email).
 		Scan(&user.Nickname, &user.Fullname, &user.About, &user.Email)
 	log.Println(err)
 
@@ -79,5 +85,39 @@ func GetUserByNickname(conn *pgx.ConnPool, user *models.User) error {
 	if err == pgx.ErrNoRows {
 		return ErrorUserNotFound
 	}
+	return nil
+}
+
+func UpdateUser(conn *pgx.ConnPool, user *models.User, updateUser *models.UserUpdate) error {
+	err := GetUserByNickname(conn, user)
+	if err != nil {
+		return err
+	}
+
+	if updateUser.Email != "" {
+		user.Email = updateUser.Email
+	}
+
+	if updateUser.Fullname != "" {
+		user.Fullname = updateUser.Fullname
+	}
+
+	if updateUser.About != "" {
+		user.About = updateUser.About
+	}
+
+	err = conn.QueryRow(updateUserCommand, user.Nickname, user.Fullname, user.About, user.Email).
+		Scan(&user.Nickname, &user.Fullname, &user.About, &user.Email)
+	log.Println(err)
+
+	if err != nil {
+		if pqError, ok := err.(pgx.PgError); ok {
+			if pqError.Code == PgxErrorUniqueViolation {
+				return ErrorUserAlreadyExists
+			}
+		}
+		return err
+	}
+
 	return nil
 }
