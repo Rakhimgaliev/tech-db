@@ -22,12 +22,12 @@ CREATE TABLE forum (
 );
 
 CREATE TABLE thread (
-    id      integer primary key,
+    id      bigserial   primary key,
     title   text    not null,
     userNickname    citext  references "user",
     forum   citext  references forum,
     message text    not null,
-    votes   integer,
+    votes   integer default 0   not null,
     slug    citext  unique,
     created timestamp with time zone default now()  not null
 );
