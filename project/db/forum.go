@@ -66,3 +66,11 @@ func GetForumBySlug(conn *pgx.ConnPool, forum *models.Forum) error {
 	}
 	return nil
 }
+
+func CheckForumExistsBySlug(conn *pgx.ConnPool, slug string) bool {
+	err := conn.QueryRow(`SELECT FROM forum WHERE slug = $1`, slug).Scan()
+	if err != nil {
+		return false
+	}
+	return true
+}

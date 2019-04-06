@@ -36,6 +36,7 @@ func main() {
 	router.POST("/api/user/:nickname/profile", handler.UpdateUser)
 
 	router.POST("/api/forum/:slug/create", handler.CreateThread)
+	router.GET("/api/forum/:slug/threads", handler.GetThreads)
 
 	// router.POST("/forum/", func(c *gin.Context) {
 	// 	if c.Param("slug") == "create" {

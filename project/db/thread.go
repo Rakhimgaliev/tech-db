@@ -19,6 +19,25 @@ const (
 			)
 			RETURNING id, title, userNickname, forum, message, votes, slug, created
 	`
+
+	getThreads = `
+		SELECT id, slug, userNickname, created, forum, title, message, votes
+			FROM thread
+			WHERE forum = $1 AND created <= $2
+			ORDER BY created
+			LIMIT $3
+	`
+
+	getThreadsDesc = `
+		SELECT id, slug, userNickname, created, forum, title, message, votes
+			FROM thread
+			WHERE forum = $1 AND created <= $2
+			ORDER BY created DESC
+			LIMIT $3
+	`
+
+	maxLimit  = 9223372036854775807.
+	firstDate = ""
 )
 
 func CreateThread(conn *pgx.ConnPool, thread *models.Thread) error {
@@ -38,6 +57,47 @@ func CreateThread(conn *pgx.ConnPool, thread *models.Thread) error {
 	log.Print("ASDASDA", err)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func GetThreads(conn *pgx.ConnPool, slug string, limit int, since string, desc bool, threads *models.Threads) error {
+	if !CheckForumExistsBySlug(conn, slug) {
+		return ErrorForumNotFound
+	}
+
+	var rows *pgx.Rows
+	defer rows.Close()
+
+	var err error
+	if limit == 0 {
+		limit = maxLimit
+	}
+	if since == "" {
+		since = firstDate
+	}
+	if desc {
+		rows, err = conn.Query(getThreadsDesc, slug, since, limit)
+	} else {
+		rows, err = conn.Query(getThreads, slug, since, limit)
+	}
+
+	if err != nil {
+		return err
+	}
+	log.Print("ASDSAD")
+	for rows.Next() {
+		thread := &models.Thread{}
+		nullableSlug := sql.NullString{}
+		err := rows.Scan(&thread.Id, &nullableSlug, &thread.Author, &thread.Created, &thread.Forum, &thread.Title, &thread.Message, &thread.Votes)
+		if err != nil {
+			return err
+		}
+		if nullableSlug.Valid {
+			thread.Slug = nullableSlug.String
+		}
+		*threads = append(*threads, thread)
 	}
 
 	return nil
