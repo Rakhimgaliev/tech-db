@@ -14,13 +14,13 @@ func (h handler) CreateForum(context *gin.Context) {
 	forum := &models.Forum{}
 
 	err := context.BindJSON(&forum)
-	log.Println(forum)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
 	err = db.CreateForum(h.conn, forum)
+	log.Println("FORUM: ", forum, "  \n ERR", err)
 	if err != nil {
 		log.Println(err)
 		switch err {
@@ -34,7 +34,7 @@ func (h handler) CreateForum(context *gin.Context) {
 				return
 			}
 			forumJSON, _ := json.Marshal(forum)
-			context.JSON(409, forumJSON)
+			context.Data(409, "application/json", forumJSON)
 			return
 		default:
 			context.JSON(500, err)
@@ -43,7 +43,7 @@ func (h handler) CreateForum(context *gin.Context) {
 	}
 
 	forumJSON, _ := json.Marshal(forum)
-	context.JSON(201, forumJSON)
+	context.Data(201, "application/json", forumJSON)
 }
 
 func (h handler) GetForum(context *gin.Context) {
@@ -60,5 +60,5 @@ func (h handler) GetForum(context *gin.Context) {
 		return
 	}
 	forumJSON, _ := json.Marshal(forum)
-	context.JSON(200, string(forumJSON))
+	context.Data(200, "application/json", forumJSON)
 }

@@ -8,7 +8,6 @@ type Thread struct {
 	Message string `json:"message"`
 	Votes   int32  `json:"votes,omitempty"`
 	Slug    string `json:"slug,omitempty"`
-	// Created time.Time `json:"created,omitempty"`
 	Created string `json:"created,omitempty"`
 }
 
