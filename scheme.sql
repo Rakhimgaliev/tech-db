@@ -16,7 +16,7 @@ CREATE TABLE "user" (
 CREATE TABLE forum (
     title   text    not null,
     userNickname    citext  references "user"   not null,
-    slug    text    primary key,
+    slug    citext    primary key,
     postCount   bigint  default 0 not null,
     threadCount bigint  default 0 not null
 );
