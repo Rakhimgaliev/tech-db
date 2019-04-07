@@ -23,6 +23,14 @@ const (
 	getThreads = `
 		SELECT id, slug, userNickname, created, forum, title, message, votes
 			FROM thread
+			WHERE forum = $1
+			ORDER BY created
+			LIMIT $2
+	`
+
+	getThreadsSince = `
+		SELECT id, slug, userNickname, created, forum, title, message, votes
+			FROM thread
 			WHERE forum = $1 AND created <= $2
 			ORDER BY created
 			LIMIT $3
@@ -31,13 +39,20 @@ const (
 	getThreadsDesc = `
 		SELECT id, slug, userNickname, created, forum, title, message, votes
 			FROM thread
+			WHERE forum = $1
+			ORDER BY created DESC
+			LIMIT $2	
+	`
+
+	getThreadsDescSince = `
+		SELECT id, slug, userNickname, created, forum, title, message, votes
+			FROM thread
 			WHERE forum = $1 AND created <= $2
 			ORDER BY created DESC
 			LIMIT $3
 	`
 
-	maxLimit  = 9223372036854775807.
-	firstDate = ""
+	maxLimit = 9223372036854775807
 )
 
 func CreateThread(conn *pgx.ConnPool, thread *models.Thread) error {
@@ -54,7 +69,6 @@ func CreateThread(conn *pgx.ConnPool, thread *models.Thread) error {
 			Scan(&thread.Id, &thread.Title, &thread.Author, &thread.Forum, &thread.Message, &thread.Votes, &thread.Slug, &thread.Created)
 	}
 
-	log.Print("ASDASDA", err)
 	if err != nil {
 		return err
 	}
@@ -63,30 +77,36 @@ func CreateThread(conn *pgx.ConnPool, thread *models.Thread) error {
 }
 
 func GetThreads(conn *pgx.ConnPool, slug string, limit int, since string, desc bool, threads *models.Threads) error {
-	if !CheckForumExistsBySlug(conn, slug) {
+	if !ForumExistsBySlug(conn, slug) {
 		return ErrorForumNotFound
 	}
 
-	var rows *pgx.Rows
-	defer rows.Close()
-
-	var err error
 	if limit == 0 {
 		limit = maxLimit
 	}
-	if since == "" {
-		since = firstDate
-	}
+
+	var rows *pgx.Rows
+	var err error
 	if desc {
-		rows, err = conn.Query(getThreadsDesc, slug, since, limit)
+		if len(since) <= 1 {
+			rows, err = conn.Query(getThreadsDesc, slug, limit)
+		} else {
+			rows, err = conn.Query(getThreadsDescSince, slug, since, limit)
+		}
 	} else {
-		rows, err = conn.Query(getThreads, slug, since, limit)
+		if len(since) <= 1 {
+			rows, err = conn.Query(getThreads, slug, limit)
+		} else {
+			rows, err = conn.Query(getThreadsSince, slug, since, limit)
+		}
 	}
 
 	if err != nil {
+		log.Println("rows scan error: ", err)
 		return err
 	}
-	log.Print("ASDSAD")
+
+	defer rows.Close()
 	for rows.Next() {
 		thread := &models.Thread{}
 		nullableSlug := sql.NullString{}

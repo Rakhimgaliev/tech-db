@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"log"
 	"strconv"
 
 	"github.com/Rakhimgaliev/tech-db-forum/project/db"
@@ -14,7 +13,6 @@ func (h handler) CreateThread(context *gin.Context) {
 	thread := &models.Thread{}
 
 	context.BindJSON(thread)
-	log.Print(thread.Slug)
 
 	err := db.CreateThread(h.conn, thread)
 
@@ -29,18 +27,25 @@ func (h handler) CreateThread(context *gin.Context) {
 
 func (h handler) GetThreads(context *gin.Context) {
 	queryArgs := context.Request.URL.Query()
-	log.Print(queryArgs["limit"])
-	log.Print(queryArgs["desc"])
-	log.Print(queryArgs["created"])
+	// log.Print(queryArgs["limit"])
+	// log.Print(queryArgs["desc"])
+	// log.Print(queryArgs["created"])
 
-	var limit int
+	limit := 0
 	if len(queryArgs["limit"]) > 0 {
 		limit, _ = strconv.Atoi(queryArgs["limit"][0])
 	}
 
-	var since string
-	if len(queryArgs["created"]) > 0 {
-		since = queryArgs["created"][0]
+	since := ""
+	if len(queryArgs["since"]) > 0 {
+		since = queryArgs["since"][0]
+	}
+
+	desc := false
+	if len(queryArgs["desc"]) > 0 {
+		if queryArgs["desc"][0] == "true" {
+			desc = true
+		}
 	}
 
 	threads := &models.Threads{}
@@ -48,7 +53,7 @@ func (h handler) GetThreads(context *gin.Context) {
 	err := db.GetThreads(h.conn, context.Param("slug"),
 		limit,
 		since,
-		true,
+		desc,
 		threads)
 
 	if err != nil {
