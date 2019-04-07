@@ -31,7 +31,7 @@ const (
 	getThreadsSince = `
 		SELECT id, slug, userNickname, created, forum, title, message, votes
 			FROM thread
-			WHERE forum = $1 AND created <= $2
+			WHERE forum = $1 AND created >= $2
 			ORDER BY created
 			LIMIT $3
 	`
