@@ -38,6 +38,8 @@ func main() {
 	router.POST("/api/forum/:slug/create", handler.CreateThread)
 	router.GET("/api/forum/:slug/threads", handler.GetThreads)
 
+	router.POST("/api/thread/:slug_or_id/create", handler.CreatePosts)
+
 	// router.POST("/forum/", func(c *gin.Context) {
 	// 	if c.Param("slug") == "create" {
 	// 		c.JSON(200, gin.H{

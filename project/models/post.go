@@ -11,8 +11,6 @@ type Post struct {
 	Forum    string    `json:"forum,omitempty"`
 	Thread   int32     `json:"thread,omitempty"`
 	Created  time.Time `json:"created,omitempty"`
-	// Created string  `json:"created,omitempty"`
-	Path []int64 `json:"-"`
 }
 
 // type PostFull struct {

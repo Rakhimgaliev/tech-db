@@ -1,45 +1,65 @@
 package db
 
 import (
-	"strings"
+	"errors"
+	"strconv"
 
 	"github.com/Rakhimgaliev/tech-db-forum/project/models"
 	"github.com/jackc/pgx"
 )
 
+var (
+	ErrorThreadNotFound = errors.New("Forum already exists")
+)
+
 const (
-	createPostsRequestBeginning = `
-		INSERT INTO post (forum, author, created, message, edited, parent_id, thread_id)
-			VALUES 
+	getForumSlugByThreadId = `
+		SELECT forum FROM thread WHERE id = $1
 	`
-
-	createPostsRequestEnd = `
-		RETURNING id, author, created, edited, message, parent_id, thread_id, forum
-	`
-
-	insertForumUsersStart = `
-		INSERT INTO forum (nickname, forum)
-			VALUES
-	`
-
-	insertForumUsersEnd = `
-		ON CONFLICT ON CONSTRAINT unique_forum_user DO NOTHING
+	getForumSlugAndThreadIdByThreadSlug = `
+		Select forum, id from thread WHERE slug = $1
 	`
 )
 
-func CreatePosts(conn *pgx.ConnPool, posts models.Posts) error {
+func CreatePosts(conn *pgx.ConnPool, threadIdOrSlag string, posts *models.Posts) error {
+	forumSlug, threadId, err := GetForumSlugAndThreadIdByThreadSlugOrId(conn, threadIdOrSlag)
+	if err != nil {
+		return err
+	}
+
+	transaction, err := conn.Begin()
+	if err != nil {
+		return err
+	}
+
+	err = insertPosts(transaction, threadId, posts, forumSlug)
+	if err != nil {
+
+	}
 
 	return nil
 }
 
-func generateCreatePostsRequest(posts models.Posts) (string, error) {
-	result := strings.Builder{}
-
-	result.WriteString(createPostsRequestBeginning)
-
-	for i := 0; i <= len(posts); i++ {
-
+func GetForumSlugAndThreadIdByThreadSlugOrId(conn *pgx.ConnPool, threadIdOrSlug string) (string, int, error) {
+	threadId := -1
+	forumSlug := ""
+	if threadId, err := strconv.Atoi(threadIdOrSlug); err == nil {
+		err := conn.QueryRow(getForumSlugByThreadId, threadId).Scan(&forumSlug)
+		if err != nil {
+			if err == pgx.ErrNoRows {
+				return forumSlug, threadId, ErrorForumAlreadyExists
+			}
+			return forumSlug, threadId, err
+		}
+		return forumSlug, threadId, nil
+	}
+	err := conn.QueryRow(getForumSlugAndThreadIdByThreadSlug, threadIdOrSlug).Scan(&threadId, &forumSlug)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return forumSlug, threadId, ErrorThreadNotFound
+		}
+		return forumSlug, threadId, err
 	}
 
-	return result.String(), nil
+	return forumSlug, threadId, nil
 }
