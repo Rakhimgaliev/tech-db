@@ -17,6 +17,15 @@ func (h handler) CreateThread(context *gin.Context) {
 	err := db.CreateThread(h.conn, thread)
 
 	if err != nil {
+		switch err {
+		case db.ErrorUniqueViolation:
+			threadJSON, _ := json.Marshal(thread)
+			context.Data(409, "application/json", threadJSON)
+			return
+		case db.ErrorUserNotFound:
+			context.JSON(404, "application/json")
+			return
+		}
 		context.JSON(500, "application/json")
 		return
 	}

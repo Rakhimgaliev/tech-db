@@ -2,10 +2,15 @@ package db
 
 import (
 	"database/sql"
+	"errors"
 	"log"
 
 	"github.com/Rakhimgaliev/tech-db-forum/project/models"
 	"github.com/jackc/pgx"
+)
+
+var (
+	ErrorUniqueViolation = errors.New("Error Unique Violatation")
 )
 
 const (
@@ -26,6 +31,12 @@ const (
 			WHERE forum = $1
 			ORDER BY created
 			LIMIT $2
+	`
+
+	getThreadBySlug = `
+		SELECT id, slug, userNickname, created, forum, title, message, votes
+			FROM thread
+			WHERE slug = $1
 	`
 
 	getThreadsSince = `
@@ -56,23 +67,64 @@ const (
 )
 
 func CreateThread(conn *pgx.ConnPool, thread *models.Thread) error {
-	var err error
-	if thread.Slug == "" {
-		nullSlug := sql.NullString{
-			String: "",
-			Valid:  false,
-		}
-		err = conn.QueryRow(createThread, nullSlug, thread.Title, thread.Author, thread.Message, thread.Created, thread.Forum).
-			Scan(&thread.Id, &thread.Title, &thread.Author, &thread.Forum, &thread.Message, &thread.Votes, &nullSlug, &thread.Created)
-	} else {
-		err = conn.QueryRow(createThread, thread.Slug, thread.Title, thread.Author, thread.Message, thread.Created, thread.Forum).
-			Scan(&thread.Id, &thread.Title, &thread.Author, &thread.Forum, &thread.Message, &thread.Votes, &thread.Slug, &thread.Created)
-	}
-
+	transaction, err := conn.Begin()
 	if err != nil {
 		return err
 	}
 
+	_, err = transaction.Exec("SET LOCAL synchronous_commit TO OFF")
+	if err != nil {
+		if txErr := transaction.Rollback(); txErr != nil {
+			return txErr
+		}
+		return err
+	}
+
+	nullSlug := sql.NullString{
+		String: "",
+		Valid:  false,
+	}
+	if thread.Slug == "" {
+		err = transaction.QueryRow(createThread, nullSlug, thread.Title, thread.Author, thread.Message, thread.Created, thread.Forum).
+			Scan(&thread.Id, &thread.Title, &thread.Author, &thread.Forum, &thread.Message, &thread.Votes, &nullSlug, &thread.Created)
+	} else {
+		err = transaction.QueryRow(createThread, thread.Slug, thread.Title, thread.Author, thread.Message, thread.Created, thread.Forum).
+			Scan(&thread.Id, &thread.Title, &thread.Author, &thread.Forum, &thread.Message, &thread.Votes, &nullSlug, &thread.Created)
+	}
+	thread.Slug = nullSlug.String
+
+	log.Println("HERE", err)
+	if err != nil {
+		if txErr := transaction.Rollback(); txErr != nil {
+			return txErr
+		}
+		if err, ok := err.(pgx.PgError); ok {
+			log.Println("EHU  ", err.Code)
+			switch err.Code {
+			case PgxErrorUniqueViolation:
+				err := GetThreadBySlug(conn, thread)
+				if err == nil {
+					return ErrorUniqueViolation
+				}
+			case PgxErrorCodeNotNullViolation:
+				return ErrorUserNotFound
+			}
+		}
+		return err
+	}
+
+	if commitErr := transaction.Commit(); commitErr != nil {
+		return commitErr
+	}
+	return nil
+}
+
+func GetThreadBySlug(conn *pgx.ConnPool, thread *models.Thread) error {
+	err := conn.QueryRow(getThreadBySlug, thread.Slug).
+		Scan(&thread.Id, &thread.Slug, &thread.Author, &thread.Created, &thread.Forum, &thread.Title, &thread.Message, &thread.Votes)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
