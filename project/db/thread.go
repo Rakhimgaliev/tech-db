@@ -89,9 +89,8 @@ func CreateThread(conn *pgx.ConnPool, thread *models.Thread) error {
 			Scan(&thread.Id, &thread.Title, &thread.Author, &thread.Forum, &thread.Message, &thread.Votes, &nullSlug, &thread.Created)
 	} else {
 		err = transaction.QueryRow(createThread, thread.Slug, thread.Title, thread.Author, thread.Message, thread.Created, thread.Forum).
-			Scan(&thread.Id, &thread.Title, &thread.Author, &thread.Forum, &thread.Message, &thread.Votes, &nullSlug, &thread.Created)
+			Scan(&thread.Id, &thread.Title, &thread.Author, &thread.Forum, &thread.Message, &thread.Votes, &thread.Slug, &thread.Created)
 	}
-	thread.Slug = nullSlug.String
 
 	log.Println("HERE", err)
 	if err != nil {
