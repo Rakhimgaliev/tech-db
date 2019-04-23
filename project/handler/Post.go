@@ -22,6 +22,10 @@ func (h handler) CreatePosts(context *gin.Context) {
 	posts := models.Posts{}
 
 	err := BindJSON(context, &posts)
+	if err != nil {
+		context.JSON(400, err)
+		return
+	}
 
 	err = db.CreatePosts(h.conn, context.Param("slug_or_id"), &posts)
 	log.Println(err, posts)

@@ -45,7 +45,9 @@ CREATE TABLE post (
 
 CREATE TABLE vote (
     nickname    citext  references "user",
-    voice   integer not null
+    voice   boolean not null,
+    threadId integer references thread,
+    CONSTRAINT uniqueVote UNIQUE (nickname, threadId)
 );
 
 

@@ -22,8 +22,9 @@ const (
 	getForumSlugByThreadId = `
 		SELECT forum FROM thread WHERE id = $1
 	`
+
 	getForumSlugAndThreadIdByThreadSlug = `
-		Select forum, id from thread WHERE slug = $1
+		SELECT forum, id from thread WHERE slug = $1
 	`
 
 	createPostsQueryStart = `
