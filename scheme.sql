@@ -24,8 +24,8 @@ CREATE TABLE forum (
 CREATE TABLE thread (
     id      bigserial   primary key,
     title   text    not null,
-    userNickname    citext  references "user",
-    forum   citext  references forum,
+    userNickname    citext  references "user"   not null,
+    forum   citext  references forum    not null,
     message text    not null,
     votes   integer default 0   not null,
     slug    citext  unique,

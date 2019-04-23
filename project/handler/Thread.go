@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"log"
 	"strconv"
 
 	"github.com/Rakhimgaliev/tech-db-forum/project/db"
@@ -14,9 +13,9 @@ func (h handler) CreateThread(context *gin.Context) {
 	thread := &models.Thread{}
 
 	context.BindJSON(thread)
+	thread.Forum = context.Param("slug")
 
 	err := db.CreateThread(h.conn, thread)
-	log.Println("ASDASD", err)
 	if err != nil {
 		switch err {
 		case db.ErrorUniqueViolation:

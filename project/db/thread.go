@@ -66,13 +66,20 @@ const (
 	maxLimit = 9223372036854775807
 )
 
-func CreateThread(conn *pgx.ConnPool, thread *models.Thread) error {
-	var user models.User
-	user.Nickname = thread.Author
-	err := GetUserByNickname(conn, &user)
+func scanThread(row *pgx.Row, thread *models.Thread) error {
+	threadSlug := sql.NullString{}
+
+	err := row.Scan(&thread.Id, &thread.Title, &thread.Author, &thread.Forum, &thread.Message, &thread.Votes, &threadSlug, &thread.Created)
 	if err != nil {
 		return err
 	}
+	if threadSlug.Valid {
+		thread.Slug = threadSlug.String
+	}
+	return err
+}
+
+func CreateThread(conn *pgx.ConnPool, thread *models.Thread) error {
 	transaction, err := conn.Begin()
 	if err != nil {
 		return err
@@ -86,18 +93,21 @@ func CreateThread(conn *pgx.ConnPool, thread *models.Thread) error {
 		return err
 	}
 
-	nullSlug := sql.NullString{
-		String: "",
-		Valid:  false,
-	}
+	threadSlug := sql.NullString{}
 	if thread.Slug == "" {
-		err = transaction.QueryRow(createThread, nullSlug, thread.Title, thread.Author, thread.Message, thread.Created, thread.Forum).
-			Scan(&thread.Id, &thread.Title, &thread.Author, &thread.Forum, &thread.Message, &thread.Votes, &nullSlug, &thread.Created)
+		threadSlug = sql.NullString{
+			String: "",
+			Valid:  false,
+		}
 	} else {
-		err = transaction.QueryRow(createThread, thread.Slug, thread.Title, thread.Author, thread.Message, thread.Created, thread.Forum).
-			Scan(&thread.Id, &thread.Title, &thread.Author, &thread.Forum, &thread.Message, &thread.Votes, &thread.Slug, &thread.Created)
+		threadSlug = sql.NullString{
+			String: thread.Slug,
+			Valid:  true,
+		}
 	}
 
+	err = scanThread(transaction.QueryRow(createThread, threadSlug, thread.Title, thread.Author, thread.Message, thread.Created, thread.Forum), thread)
+	log.Println("HERE:", err)
 	if err != nil {
 		if txErr := transaction.Rollback(); txErr != nil {
 			return txErr
