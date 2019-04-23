@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"log"
 	"strconv"
 
 	"github.com/Rakhimgaliev/tech-db-forum/project/db"
@@ -15,7 +16,7 @@ func (h handler) CreateThread(context *gin.Context) {
 	context.BindJSON(thread)
 
 	err := db.CreateThread(h.conn, thread)
-
+	log.Println("ASDASD", err)
 	if err != nil {
 		switch err {
 		case db.ErrorUniqueViolation:
@@ -23,7 +24,7 @@ func (h handler) CreateThread(context *gin.Context) {
 			context.Data(409, "application/json", threadJSON)
 			return
 		case db.ErrorUserNotFound:
-			context.JSON(404, "application/json")
+			context.JSON(404, err)
 			return
 		}
 		context.JSON(500, "application/json")

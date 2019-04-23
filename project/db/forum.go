@@ -40,8 +40,6 @@ func CreateForum(conn *pgx.ConnPool, forum *models.Forum) error {
 	err := conn.QueryRow(createForum, forum.Title, forum.User, forum.Slug).
 		Scan(&forum.Title, &forum.User, &forum.Slug, &forum.Posts, &forum.Threads)
 
-	log.Println("CREATEFORUM: ", err)
-
 	if err != nil {
 		if pqError, ok := err.(pgx.PgError); ok {
 			switch pqError.Code {

@@ -67,6 +67,12 @@ const (
 )
 
 func CreateThread(conn *pgx.ConnPool, thread *models.Thread) error {
+	var user models.User
+	user.Nickname = thread.Author
+	err := GetUserByNickname(conn, &user)
+	if err != nil {
+		return err
+	}
 	transaction, err := conn.Begin()
 	if err != nil {
 		return err
@@ -92,13 +98,11 @@ func CreateThread(conn *pgx.ConnPool, thread *models.Thread) error {
 			Scan(&thread.Id, &thread.Title, &thread.Author, &thread.Forum, &thread.Message, &thread.Votes, &thread.Slug, &thread.Created)
 	}
 
-	log.Println("HERE", err)
 	if err != nil {
 		if txErr := transaction.Rollback(); txErr != nil {
 			return txErr
 		}
 		if err, ok := err.(pgx.PgError); ok {
-			log.Println("EHU  ", err.Code)
 			switch err.Code {
 			case PgxErrorUniqueViolation:
 				err := GetThreadBySlug(conn, thread)
