@@ -37,8 +37,10 @@ func main() {
 
 	router.POST("/api/forum/:slug/create", handler.CreateThread)
 	router.GET("/api/forum/:slug/threads", handler.GetThreads)
+	router.GET("/api/thread/:slug_or_id/details", handler.ThreadDetails)
 
 	router.POST("/api/thread/:slug_or_id/create", handler.CreatePosts)
+	router.GET("/api/thread/:slug_or_id/posts", handler.GetPosts)
 
 	router.POST("/api/thread/:slug_or_id/vote", handler.CreateThreadVote)
 
