@@ -30,6 +30,7 @@ func main() {
 		}
 	})
 	router.GET("/api/forum/:slug/details", handler.GetForum)
+	router.GET("/api/forum/:slug/users", handler.GetForumUsers)
 
 	router.POST("/api/user/:nickname/create", handler.CreateUser)
 	router.GET("/api/user/:nickname/profile", handler.GetUser)
@@ -38,11 +39,11 @@ func main() {
 	router.POST("/api/forum/:slug/create", handler.CreateThread)
 	router.GET("/api/forum/:slug/threads", handler.GetThreads)
 	router.GET("/api/thread/:slug_or_id/details", handler.ThreadDetails)
+	router.POST("/api/thread/:slug_or_id/details", handler.ThreadUpdate)
+	router.POST("/api/thread/:slug_or_id/vote", handler.CreateThreadVote)
 
 	router.POST("/api/thread/:slug_or_id/create", handler.CreatePosts)
 	router.GET("/api/thread/:slug_or_id/posts", handler.GetPosts)
-
-	router.POST("/api/thread/:slug_or_id/vote", handler.CreateThreadVote)
 
 	router.Run("127.0.0.1:5000")
 }
