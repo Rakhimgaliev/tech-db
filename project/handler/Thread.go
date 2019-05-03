@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"log"
 	"strconv"
 
 	"github.com/Rakhimgaliev/tech-db-forum/project/db"
@@ -36,9 +37,6 @@ func (h handler) CreateThread(context *gin.Context) {
 
 func (h handler) GetThreads(context *gin.Context) {
 	queryArgs := context.Request.URL.Query()
-	// log.Print(queryArgs["limit"])
-	// log.Print(queryArgs["desc"])
-	// log.Print(queryArgs["created"])
 
 	limit := 0
 	if len(queryArgs["limit"]) > 0 {
@@ -90,6 +88,7 @@ func (h handler) ThreadDetails(context *gin.Context) {
 				return
 			}
 			context.JSON(500, err)
+			return
 		}
 		threadJSON, _ := json.Marshal(thread)
 		context.Data(200, "application/json", threadJSON)
@@ -103,6 +102,26 @@ func (h handler) ThreadDetails(context *gin.Context) {
 			return
 		}
 		context.JSON(500, err)
+	}
+	threadJSON, _ := json.Marshal(thread)
+	context.Data(200, "application/json", threadJSON)
+	return
+}
+
+func (h handler) ThreadUpdate(context *gin.Context) {
+	threadUpdate := models.ThreadUpdate{}
+	thread := models.Thread{}
+	context.BindJSON(&threadUpdate)
+
+	err := db.UpdateThread(h.conn, context.Param("slug_or_id"), &threadUpdate, &thread)
+	log.Println("---------------->", err)
+	if err != nil {
+		if err == db.ErrorThreadNotFound {
+			context.JSON(404, err)
+			return
+		}
+		context.JSON(500, err)
+		return
 	}
 	threadJSON, _ := json.Marshal(thread)
 	context.Data(200, "application/json", threadJSON)

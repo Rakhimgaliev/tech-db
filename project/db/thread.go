@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"log"
+	"strconv"
 
 	"github.com/Rakhimgaliev/tech-db-forum/project/models"
 	"github.com/jackc/pgx"
@@ -69,12 +70,27 @@ const (
 			LIMIT $3
 	`
 
+	threadUpdateFullById = `
+		UPDATE thread SET title = $1, message = $2
+			WHERE id = $3
+			RETURNING id, title, userNickname, forum, message, votes, slug, created
+	`
+	threadUpdateTitleById = `
+		UPDATE thread SET title = $1
+			WHERE id = $2
+			RETURNING id, title, userNickname, forum, message, votes, slug, created
+	`
+	threadUpdateMessageById = `
+		UPDATE thread SET message = $1
+			WHERE id = $2
+			RETURNING id, title, userNickname, forum, message, votes, slug, created
+	`
+
 	maxLimit = 9223372036854775807
 )
 
 func scanThread(row *pgx.Row, thread *models.Thread) error {
 	threadSlug := sql.NullString{}
-
 	err := row.Scan(&thread.Id, &thread.Title, &thread.Author, &thread.Forum, &thread.Message, &thread.Votes, &threadSlug, &thread.Created)
 	log.Println("error on Scanning:", err)
 	if err != nil {
@@ -114,7 +130,6 @@ func CreateThread(conn *pgx.ConnPool, thread *models.Thread) error {
 	}
 
 	err = scanThread(transaction.QueryRow(createThread, threadSlug, thread.Title, thread.Author, thread.Message, thread.Created, thread.Forum), thread)
-	log.Println("HERE:", err)
 	if err != nil {
 		if txErr := transaction.Rollback(); txErr != nil {
 			return txErr
@@ -129,6 +144,14 @@ func CreateThread(conn *pgx.ConnPool, thread *models.Thread) error {
 			case PgxErrorCodeNotNullViolation:
 				return ErrorUserNotFound
 			}
+		}
+		return err
+	}
+
+	err = updateForumThreadCount(transaction, thread.Forum)
+	if err != nil {
+		if txErr := transaction.Rollback(); txErr != nil {
+			return txErr
 		}
 		return err
 	}
@@ -211,6 +234,57 @@ func GetThreads(conn *pgx.ConnPool, slug string, limit int, since string, desc b
 			thread.Slug = nullableSlug.String
 		}
 		*threads = append(*threads, thread)
+	}
+
+	return nil
+}
+
+func UpdateThread(conn *pgx.ConnPool, slug_or_id string, threadUpdate *models.ThreadUpdate, thread *models.Thread) error {
+	var row *pgx.Row
+	id, err := strconv.Atoi(slug_or_id)
+	if err == nil {
+		thread.Id = int32(id)
+	} else {
+		id, err := GetThreadIdBySlug(conn, slug_or_id)
+		if err != nil {
+			return err
+		}
+		thread.Id = int32(id)
+	}
+
+	log.Println("SSS", threadUpdate.Message, threadUpdate.Title)
+
+	if threadUpdate.Message != "" && threadUpdate.Title != "" {
+		row = conn.QueryRow(
+			threadUpdateFullById,
+			threadUpdate.Title,
+			threadUpdate.Message,
+			thread.Id,
+		)
+	} else if threadUpdate.Title != "" {
+		row = conn.QueryRow(
+			threadUpdateTitleById,
+			threadUpdate.Title,
+			thread.Id,
+		)
+	} else if threadUpdate.Message != "" {
+		row = conn.QueryRow(
+			threadUpdateMessageById,
+			threadUpdate.Message,
+			thread.Id,
+		)
+	}
+
+	log.Println("AS_----------------------", row)
+
+	err = scanThread(row, thread)
+	log.Println("AS2_----------------------", thread.Id)
+
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return ErrorThreadNotFound
+		}
+		return err
 	}
 
 	return nil

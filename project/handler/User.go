@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"log"
+	"strconv"
 
 	"github.com/Rakhimgaliev/tech-db-forum/project/db"
 	"github.com/Rakhimgaliev/tech-db-forum/project/models"
@@ -99,4 +100,40 @@ func (h handler) UpdateUser(context *gin.Context) {
 	// 	return
 	// }
 
+}
+
+func (h handler) GetForumUsers(context *gin.Context) {
+	queryArgs := context.Request.URL.Query()
+
+	limit := 0
+	if len(queryArgs["limit"]) > 0 {
+		limit, _ = strconv.Atoi(queryArgs["limit"][0])
+	}
+
+	since := ""
+	if len(queryArgs["since"]) > 0 {
+		since = queryArgs["since"][0]
+	}
+
+	desc := false
+	if len(queryArgs["desc"]) > 0 {
+		if queryArgs["desc"][0] == "true" {
+			desc = true
+		}
+	}
+
+	users := models.Users{}
+	err := db.GetUsersByForum(h.conn, context.Param("slug"),
+		limit, since, desc, &users)
+
+	if err != nil {
+		if err == db.ErrorForumNotFound {
+			context.JSON(404, err)
+			return
+		}
+		context.JSON(500, err)
+		return
+	}
+	usersJSON, _ := json.Marshal(users)
+	context.Data(200, "application/json", usersJSON)
 }

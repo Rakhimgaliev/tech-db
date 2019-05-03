@@ -23,11 +23,17 @@ const (
 			(SELECT u.nickname FROM "user" u WHERE u.nickname = $2),
 			$3)
 			RETURNING title, userNickname, slug, postCount, threadCount
-		`
+	`
 
 	getForumBySlug = `
 		SELECT title, userNickname, slug, postCount, threadCount
-			FROM forum WHERE slug = $1`
+			FROM forum WHERE slug = $1
+	`
+
+	updateForumThreadCountQuery = `
+		UPDATE forum f SET threadCount = threadCount + 1
+			WHERE f.slug = $1
+	`
 )
 
 const (
@@ -71,4 +77,9 @@ func ForumExistsBySlug(conn *pgx.ConnPool, slug string) bool {
 		return false
 	}
 	return true
+}
+
+func updateForumThreadCount(transaction *pgx.Tx, forumSlug string) error {
+	_, err := transaction.Exec(updateForumThreadCountQuery, forumSlug)
+	return err
 }

@@ -32,6 +32,74 @@ const (
 			SET fullname = $2, about = $3, email = $4
 			WHERE nickname = $1
 			RETURNING nickname, fullname, about, email`
+
+	getUsersByForum = `
+		SELECT u.nickname, u.fullname, u.about, u.email
+			FROM forum_user fu
+			JOIN "user" u ON fu.nickname = u.nickname
+			WHERE fu.forum = $1
+			ORDER BY u.nickname
+	`
+
+	getUsersByForumDesc = `
+		SELECT u.nickname, u.fullname, u.about, u.email
+			FROM forum_user fu
+			JOIN "user" u ON fu.nickname = u.nickname
+			WHERE fu.forum = $1
+			ORDER BY u.nickname DESC
+	`
+
+	getUsersByForumLimit = `
+		SELECT u.nickname, u.fullname, u.about, u.email
+			FROM forum_user fu
+			JOIN "user" u ON fu.nickname = u.nickname
+			WHERE fu.forum = $1
+			ORDER BY u.nickname
+			LIMIT $2
+	`
+
+	getUsersByForumLimitDesc = `
+		SELECT u.nickname, u.fullname, u.about, u.email
+			FROM forum_user fu
+			JOIN "user" u ON fu.nickname = u.nickname
+			WHERE fu.forum = $1
+			ORDER BY u.nickname DESC
+			LIMIT $2
+	`
+
+	getUsersByForumLimitSince = `
+		SELECT u.nickname, u.fullname, u.about, u.email
+			FROM forum_user fu
+			JOIN "user" u ON fu.nickname = u.nickname
+			WHERE fu.forum = $1 AND u.nickname > $2
+			ORDER BY u.nickname
+			LIMIT $3
+	`
+
+	getUsersByForumLimitSinceDesc = `
+		SELECT u.nickname, u.fullname, u.about, u.email
+			FROM forum_user fu
+			JOIN "user" u ON fu.nickname = u.nickname
+			WHERE fu.forum = $1 AND u.nickname < $2
+			ORDER BY u.nickname DESC
+			LIMIT $3
+	`
+
+	getUsersByForumSince = `
+		SELECT u.nickname, u.fullname, u.about, u.email
+			FROM forum_user fu
+			JOIN "user" u ON fu.nickname = u.nickname
+			WHERE fu.forum = $1 AND u.nickname > $2
+			ORDER BY u.nickname
+	`
+
+	getUsersByForumSinceDesc = `
+		SELECT u.nickname, u.fullname, u.about, u.email
+			FROM forum_user fu
+			JOIN "user" u ON fu.nickname = u.nickname
+			WHERE fu.forum = $1 AND u.nickname < $2
+			ORDER BY u.nickname DESC
+	`
 )
 
 func CreateUser(conn *pgx.ConnPool, user *models.User) error {
@@ -119,5 +187,57 @@ func UpdateUser(conn *pgx.ConnPool, user *models.User, updateUser *models.UserUp
 		return err
 	}
 
+	return nil
+}
+
+func GetUsersByForum(conn *pgx.ConnPool, slug string, limit int, since string, desc bool, users *models.Users) error {
+	log.Println("slug", slug, "limit", limit, "desc", desc, "since", since)
+	if !ForumExistsBySlug(conn, slug) {
+		return ErrorForumNotFound
+	}
+
+	var rows *pgx.Rows
+	var err error
+	if desc == true {
+		if since != "" && limit > 0 {
+			rows, err = conn.Query(getUsersByForumLimitSinceDesc, slug, since, limit)
+		} else if since != "" {
+			rows, err = conn.Query(getUsersByForumSinceDesc, slug, since)
+		} else if limit > 0 {
+			rows, err = conn.Query(getUsersByForumLimitDesc, slug, limit)
+		} else {
+			rows, err = conn.Query(getUsersByForumDesc, slug)
+		}
+	} else {
+		if since != "" && limit > 0 {
+			rows, err = conn.Query(getUsersByForumLimitSince, slug, since, limit)
+		} else if since != "" {
+			rows, err = conn.Query(getUsersByForumSince, slug, since)
+		} else if limit > 0 {
+			rows, err = conn.Query(getUsersByForumLimit, slug, limit)
+		} else {
+			rows, err = conn.Query(getUsersByForum, slug)
+		}
+	}
+
+	log.Println("--------", err)
+
+	if err != nil {
+		return err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		user := &models.User{}
+		log.Println("-----ASDADS---")
+
+		err := rows.Scan(&user.Nickname, &user.Fullname, &user.About, &user.Email)
+		if err != nil {
+			return err
+		}
+
+		*users = append(*users, user)
+	}
 	return nil
 }
