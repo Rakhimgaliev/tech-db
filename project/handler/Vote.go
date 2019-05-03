@@ -32,6 +32,6 @@ func (h handler) CreateThreadVote(context *gin.Context) {
 		return
 	}
 	threadJSON, _ := json.Marshal(thread)
-	context.Data(201, "application/json", threadJSON)
+	context.Data(200, "application/json", threadJSON)
 	return
 }

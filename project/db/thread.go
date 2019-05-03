@@ -39,6 +39,12 @@ const (
 			WHERE slug = $1
 	`
 
+	getThreadById = `
+		SELECT id, slug, userNickname, created, forum, title, message, votes
+			FROM thread
+			WHERE id = $1
+	`
+
 	getThreadsSince = `
 		SELECT id, slug, userNickname, created, forum, title, message, votes
 			FROM thread
@@ -70,6 +76,7 @@ func scanThread(row *pgx.Row, thread *models.Thread) error {
 	threadSlug := sql.NullString{}
 
 	err := row.Scan(&thread.Id, &thread.Title, &thread.Author, &thread.Forum, &thread.Message, &thread.Votes, &threadSlug, &thread.Created)
+	log.Println("error on Scanning:", err)
 	if err != nil {
 		return err
 	}
@@ -135,7 +142,28 @@ func CreateThread(conn *pgx.ConnPool, thread *models.Thread) error {
 func GetThreadBySlug(conn *pgx.ConnPool, thread *models.Thread) error {
 	err := conn.QueryRow(getThreadBySlug, thread.Slug).
 		Scan(&thread.Id, &thread.Slug, &thread.Author, &thread.Created, &thread.Forum, &thread.Title, &thread.Message, &thread.Votes)
+	log.Println(err)
 	if err != nil {
+		if err, ok := err.(pgx.PgError); ok {
+			if err.Code == PgxErrorCodeNotNullViolation {
+				return ErrorThreadNotFound
+			}
+		}
+		return err
+	}
+	return nil
+}
+
+func GetThreadById(conn *pgx.ConnPool, thread *models.Thread) error {
+	err := conn.QueryRow(getThreadById, thread.Id).
+		Scan(&thread.Id, &thread.Slug, &thread.Author, &thread.Created, &thread.Forum, &thread.Title, &thread.Message, &thread.Votes)
+	log.Println(err)
+	if err != nil {
+		if err, ok := err.(pgx.PgError); ok {
+			if err.Code == PgxErrorCodeNotNullViolation {
+				return ErrorThreadNotFound
+			}
+		}
 		return err
 	}
 	return nil

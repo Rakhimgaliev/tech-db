@@ -27,7 +27,7 @@ const (
 				WHERE v.threadId=$1
 		)
 			WHERE t.id=$2
-				RETURNING id, slug, userNickname, created, forum, title, message, votes
+				RETURNING id, title, userNickname, forum, message, votes, slug, created
 	`
 )
 
@@ -68,7 +68,6 @@ func CreateThreadVote(conn *pgx.ConnPool, threadSlugOrId string, thread *models.
 
 	log.Println(vote.Nickname, voteBool, thread.Id)
 	_, err = transaction.Exec(createThreadVote, vote.Nickname, voteBool, thread.Id)
-	log.Println(err)
 	if err != nil {
 		if txErr := transaction.Rollback(); txErr != nil {
 			return txErr
@@ -83,6 +82,7 @@ func CreateThreadVote(conn *pgx.ConnPool, threadSlugOrId string, thread *models.
 	}
 
 	err = updateThreadVotesCount(transaction, thread)
+	log.Println("error:", err)
 	if err != nil {
 		if txErr := transaction.Rollback(); txErr != nil {
 			return txErr

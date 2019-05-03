@@ -47,3 +47,46 @@ func (h handler) CreatePosts(context *gin.Context) {
 	postsJSON, _ := json.Marshal(posts)
 	context.Data(201, "application/json", postsJSON)
 }
+
+func (h handler) GetPosts(context *gin.Context) {
+	posts := models.Posts{}
+	queryArgs := context.Request.URL.Query()
+
+	limit := "null"
+	if len(queryArgs["limit"]) > 0 {
+		limit = queryArgs["limit"][0]
+	}
+
+	since := "null"
+	if len(queryArgs["since"]) > 0 {
+		since = queryArgs["since"][0]
+	}
+
+	desc := false
+	if len(queryArgs["desc"]) > 0 {
+		if queryArgs["desc"][0] == "true" {
+			desc = true
+		}
+	}
+
+	sort := ""
+	if len(queryArgs["sort"]) > 0 {
+		sort = queryArgs["sort"][0]
+	}
+
+	err := db.GetPosts(h.conn, context.Param("slug_or_id"),
+		limit, desc,
+		since, sort, &posts)
+
+	if err != nil {
+		if err == db.ErrorThreadNotFound {
+			// 404
+			return
+		}
+
+		//500
+		return
+	}
+	//200
+	return
+}

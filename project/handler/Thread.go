@@ -77,3 +77,34 @@ func (h handler) GetThreads(context *gin.Context) {
 	context.Data(200, "application/json", threadsJSON)
 	return
 }
+
+func (h handler) ThreadDetails(context *gin.Context) {
+	thread := models.Thread{}
+	id, err := strconv.Atoi(context.Param("slug_or_id"))
+	if err != nil {
+		thread.Slug = context.Param("slug_or_id")
+		err := db.GetThreadBySlug(h.conn, &thread)
+		if err != nil {
+			if err == db.ErrorThreadNotFound {
+				context.JSON(404, err)
+				return
+			}
+			context.JSON(500, err)
+		}
+		threadJSON, _ := json.Marshal(thread)
+		context.Data(200, "application/json", threadJSON)
+		return
+	}
+	thread.Id = int32(id)
+	err = db.GetThreadById(h.conn, &thread)
+	if err != nil {
+		if err == db.ErrorThreadNotFound {
+			context.JSON(404, err)
+			return
+		}
+		context.JSON(500, err)
+	}
+	threadJSON, _ := json.Marshal(thread)
+	context.Data(200, "application/json", threadJSON)
+	return
+}
