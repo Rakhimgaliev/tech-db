@@ -7,7 +7,7 @@ DROP TABLE IF EXISTS post;
 DROP TABLE IF EXISTS vote;
 
 CREATE TABLE "user" (
-    nickname    citext  primary key,
+    nickname    citext  primary key COLLATE "POSIX",
     fullname    text    not null,
     about       text,
     email       citext  unique  not null

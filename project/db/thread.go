@@ -86,6 +86,12 @@ const (
 			RETURNING id, title, userNickname, forum, message, votes, slug, created
 	`
 
+	createForumUserQuery = `
+		INSERT INTO forum_user (nickname, forum)
+			VALUES ($1, $2)
+			ON CONFLICT ON CONSTRAINT uniqueForumUser DO NOTHING
+	`
+
 	maxLimit = 9223372036854775807
 )
 
@@ -149,6 +155,14 @@ func CreateThread(conn *pgx.ConnPool, thread *models.Thread) error {
 	}
 
 	err = updateForumThreadCount(transaction, thread.Forum)
+	if err != nil {
+		if txErr := transaction.Rollback(); txErr != nil {
+			return txErr
+		}
+		return err
+	}
+
+	transaction.Exec(createForumUserQuery, thread.Author, thread.Forum)
 	if err != nil {
 		if txErr := transaction.Rollback(); txErr != nil {
 			return txErr
