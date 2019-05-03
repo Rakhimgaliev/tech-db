@@ -40,7 +40,8 @@ CREATE TABLE post (
     edited  boolean default false,
     forum   citext  references forum,
     thread  integer references thread,
-    created timestamp with time zone default now()
+    created timestamp with time zone default now(),
+    children    integer[]
 );
 
 CREATE TABLE vote (
@@ -57,3 +58,20 @@ CREATE TABLE forum_user (
     CONSTRAINT  uniqueForumUser UNIQUE (nickname, forum)
 );
 
+CREATE OR REPLACE FUNCTION create_children() RETURNS trigger as $create_children$
+BEGIN
+   IF NEW.parent IS NULL THEN
+     NEW.children := (ARRAY [NEW.id]);
+     return NEW;
+   end if;
+
+   NEW.children := (SELECT array_append(p.children, NEW.id::integer)
+                from post p where p.id = NEW.parent);
+  RETURN NEW;
+END;
+$create_children$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS create_children ON post;
+
+CREATE TRIGGER create_children BEFORE INSERT ON post
+  FOR EACH ROW EXECUTE PROCEDURE create_children();

@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"log"
+	"strconv"
 
 	"github.com/Rakhimgaliev/tech-db-forum/project/db"
 	"github.com/Rakhimgaliev/tech-db-forum/project/models"
@@ -52,14 +53,14 @@ func (h handler) GetPosts(context *gin.Context) {
 	posts := models.Posts{}
 	queryArgs := context.Request.URL.Query()
 
-	limit := "null"
+	limit := 0
 	if len(queryArgs["limit"]) > 0 {
-		limit = queryArgs["limit"][0]
+		limit, _ = strconv.Atoi(queryArgs["limit"][0])
 	}
 
-	since := "null"
+	since := 0
 	if len(queryArgs["since"]) > 0 {
-		since = queryArgs["since"][0]
+		since, _ = strconv.Atoi(queryArgs["since"][0])
 	}
 
 	desc := false
@@ -77,16 +78,18 @@ func (h handler) GetPosts(context *gin.Context) {
 	err := db.GetPosts(h.conn, context.Param("slug_or_id"),
 		limit, desc,
 		since, sort, &posts)
+	log.Println("-------------------err: ", err)
 
 	if err != nil {
 		if err == db.ErrorThreadNotFound {
-			// 404
+			context.JSON(404, err)
 			return
 		}
-
-		//500
+		context.JSON(500, err)
 		return
 	}
-	//200
+	log.Println("posts count: ", len(posts))
+	postsJSON, _ := json.Marshal(posts)
+	context.Data(200, "application/json", postsJSON)
 	return
 }
