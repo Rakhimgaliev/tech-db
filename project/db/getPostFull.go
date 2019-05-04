@@ -37,6 +37,12 @@ func GetPostFull(conn *pgx.ConnPool, related []string, postFull *models.PostFull
 		err = getPostWithForum(conn, postFull)
 	} else if withUser && withThread && !withForum {
 		err = getPostWithUserThread(conn, postFull)
+	} else if withUser && !withThread && withForum {
+		err = getPostWithUserForum(conn, postFull)
+	} else if !withUser && withThread && withForum {
+		err = getPostWithThreadForum(conn, postFull)
+	} else if withUser && withThread && withForum {
+		err = getPostWithUserThreadForum(conn, postFull)
 	}
 
 	log.Println("----------", err)
@@ -87,8 +93,40 @@ const (
 			t.id, t.slug, t.userNickname, t.created, t.forum, t.title, t.message, t.votes,
 			u.nickname, u.fullname, u.about, u.email
 			FROM post p 
-			JOIN thread t ON p.thread = t.id
 			JOIN "user" u ON p.userNickname = u.nickname
+			JOIN thread t ON p.thread = t.id
+			WHERE p.id = $1
+	`
+
+	getPostWithUserForumQuery = `
+		SELECT p.id, p.userNickname, p.created, p.edited, p.message, p.parent, p.thread, p.forum,
+			f.userNickname, f.slug, f.title, f.threadCount, f.postCount,
+			u.nickname, u.fullname, u.about, u.email
+			FROM post p 
+			JOIN forum f ON p.forum = f.slug
+			JOIN "user" u ON p.userNickname = u.nickname
+			WHERE p.id = $1
+	`
+
+	getPostWithThreadForumQuery = `
+		SELECT p.id, p.userNickname, p.created, p.edited, p.message, p.parent, p.thread, p.forum,
+			f.userNickname, f.slug, f.title, f.threadCount, f.postCount,
+			t.id, t.slug, t.userNickname, t.created, t.forum, t.title, t.message, t.votes
+			FROM post p 
+			JOIN forum f ON p.forum = f.slug
+			JOIN thread t ON p.thread = t.id
+			WHERE p.id = $1
+	`
+
+	getPostWithUserThreadForumQuery = `
+		SELECT p.id, p.userNickname, p.created, p.edited, p.message, p.parent, p.thread, p.forum,
+			f.userNickname, f.slug, f.title, f.threadCount, f.postCount,
+			t.id, t.slug, t.userNickname, t.created, t.forum, t.title, t.message, t.votes,
+			u.nickname, u.fullname, u.about, u.email
+			FROM post p 
+			JOIN "user" u ON p.userNickname = u.nickname
+			JOIN thread t ON p.thread = t.id
+			JOIN forum f ON p.forum = f.slug
 			WHERE p.id = $1
 	`
 )
@@ -201,10 +239,132 @@ func getPostWithForum(db *pgx.ConnPool, postFull *models.PostFull) error {
 	return nil
 }
 
-func getPostWithUserThread(db *pgx.ConnPool, pf *models.PostFull) error {
+func getPostWithUserThread(db *pgx.ConnPool, postFull *models.PostFull) error {
 	parent := sql.NullInt64{}
 	slugThread := sql.NullString{}
-	err := db.QueryRow(getPostWithUserThreadQuery, pf.Post.Id).Scan(
+	err := db.QueryRow(getPostWithUserThreadQuery, postFull.Post.Id).Scan(
+		&postFull.Post.Id,
+		&postFull.Post.Author,
+		&postFull.Post.Created,
+		&postFull.Post.IsEdited,
+		&postFull.Post.Message,
+		&parent,
+		&postFull.Post.Thread,
+		&postFull.Post.Forum,
+		&postFull.Thread.Id,
+		&slugThread,
+		&postFull.Thread.Author,
+		&postFull.Thread.Created,
+		&postFull.Thread.Forum,
+		&postFull.Thread.Title,
+		&postFull.Thread.Message,
+		&postFull.Thread.Votes,
+		&postFull.Author.Nickname,
+		&postFull.Author.Fullname,
+		&postFull.Author.About,
+		&postFull.Author.Email,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	if parent.Valid {
+		postFull.Post.Parent = parent.Int64
+	} else {
+		postFull.Post.Parent = 0
+	}
+
+	if slugThread.Valid {
+		postFull.Thread.Slug = slugThread.String
+	} else {
+		postFull.Thread.Slug = ""
+	}
+	return nil
+}
+
+func getPostWithUserForum(db *pgx.ConnPool, postFull *models.PostFull) error {
+	parent := sql.NullInt64{}
+	err := db.QueryRow(getPostWithUserForumQuery, postFull.Post.Id).Scan(
+		&postFull.Post.Id,
+		&postFull.Post.Author,
+		&postFull.Post.Created,
+		&postFull.Post.IsEdited,
+		&postFull.Post.Message,
+		&parent,
+		&postFull.Post.Thread,
+		&postFull.Post.Forum,
+		&postFull.Forum.User,
+		&postFull.Forum.Slug,
+		&postFull.Forum.Title,
+		&postFull.Forum.Threads,
+		&postFull.Forum.Posts,
+		&postFull.Author.Nickname,
+		&postFull.Author.Fullname,
+		&postFull.Author.About,
+		&postFull.Author.Email,
+	)
+	if err != nil {
+		return err
+	}
+
+	if parent.Valid {
+		postFull.Post.Parent = parent.Int64
+	} else {
+		postFull.Post.Parent = 0
+	}
+	return nil
+}
+
+func getPostWithThreadForum(db *pgx.ConnPool, postFull *models.PostFull) error {
+	parent := sql.NullInt64{}
+	slugThread := sql.NullString{}
+	err := db.QueryRow(getPostWithThreadForumQuery, postFull.Post.Id).Scan(
+		&postFull.Post.Id,
+		&postFull.Post.Author,
+		&postFull.Post.Created,
+		&postFull.Post.IsEdited,
+		&postFull.Post.Message,
+		&parent,
+		&postFull.Post.Thread,
+		&postFull.Post.Forum,
+		&postFull.Forum.User,
+		&postFull.Forum.Slug,
+		&postFull.Forum.Title,
+		&postFull.Forum.Threads,
+		&postFull.Forum.Posts,
+		&postFull.Thread.Id,
+		&slugThread,
+		&postFull.Thread.Author,
+		&postFull.Thread.Created,
+		&postFull.Thread.Forum,
+		&postFull.Thread.Title,
+		&postFull.Thread.Message,
+		&postFull.Thread.Votes,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	if parent.Valid {
+		postFull.Post.Parent = parent.Int64
+	} else {
+		postFull.Post.Parent = 0
+	}
+
+	if slugThread.Valid {
+		postFull.Thread.Slug = slugThread.String
+	} else {
+		postFull.Thread.Slug = ""
+	}
+	return nil
+}
+
+func getPostWithUserThreadForum(db *pgx.ConnPool, pf *models.PostFull) error {
+	parent := sql.NullInt64{}
+	slugThread := sql.NullString{}
+	err := db.QueryRow(getPostWithUserThreadForumQuery, pf.Post.Id).Scan(
 		&pf.Post.Id,
 		&pf.Post.Author,
 		&pf.Post.Created,
@@ -213,6 +373,11 @@ func getPostWithUserThread(db *pgx.ConnPool, pf *models.PostFull) error {
 		&parent,
 		&pf.Post.Thread,
 		&pf.Post.Forum,
+		&pf.Forum.User,
+		&pf.Forum.Slug,
+		&pf.Forum.Title,
+		&pf.Forum.Threads,
+		&pf.Forum.Posts,
 		&pf.Thread.Id,
 		&slugThread,
 		&pf.Thread.Author,
@@ -226,7 +391,6 @@ func getPostWithUserThread(db *pgx.ConnPool, pf *models.PostFull) error {
 		&pf.Author.About,
 		&pf.Author.Email,
 	)
-
 	if err != nil {
 		return err
 	}
@@ -236,7 +400,6 @@ func getPostWithUserThread(db *pgx.ConnPool, pf *models.PostFull) error {
 	} else {
 		pf.Post.Parent = 0
 	}
-
 	if slugThread.Valid {
 		pf.Thread.Slug = slugThread.String
 	} else {
