@@ -87,6 +87,7 @@ func (h handler) ThreadDetails(context *gin.Context) {
 				context.JSON(404, err)
 				return
 			}
+			log.Println(err)
 			context.JSON(500, err)
 			return
 		}
@@ -101,6 +102,7 @@ func (h handler) ThreadDetails(context *gin.Context) {
 			context.JSON(404, err)
 			return
 		}
+		log.Println(err)
 		context.JSON(500, err)
 	}
 	threadJSON, _ := json.Marshal(thread)

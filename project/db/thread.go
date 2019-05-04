@@ -181,10 +181,8 @@ func GetThreadBySlug(conn *pgx.ConnPool, thread *models.Thread) error {
 		Scan(&thread.Id, &thread.Slug, &thread.Author, &thread.Created, &thread.Forum, &thread.Title, &thread.Message, &thread.Votes)
 	log.Println(err)
 	if err != nil {
-		if err, ok := err.(pgx.PgError); ok {
-			if err.Code == PgxErrorCodeNotNullViolation {
-				return ErrorThreadNotFound
-			}
+		if err == pgx.ErrNoRows {
+			return ErrorThreadNotFound
 		}
 		return err
 	}
@@ -196,10 +194,8 @@ func GetThreadById(conn *pgx.ConnPool, thread *models.Thread) error {
 		Scan(&thread.Id, &thread.Slug, &thread.Author, &thread.Created, &thread.Forum, &thread.Title, &thread.Message, &thread.Votes)
 	log.Println(err)
 	if err != nil {
-		if err, ok := err.(pgx.PgError); ok {
-			if err.Code == PgxErrorCodeNotNullViolation {
-				return ErrorThreadNotFound
-			}
+		if err == pgx.ErrNoRows {
+			return ErrorThreadNotFound
 		}
 		return err
 	}
@@ -261,6 +257,9 @@ func UpdateThread(conn *pgx.ConnPool, slug_or_id string, threadUpdate *models.Th
 	} else {
 		id, err := GetThreadIdBySlug(conn, slug_or_id)
 		if err != nil {
+			if err == pgx.ErrNoRows {
+				return ErrorThreadNotFound
+			}
 			return err
 		}
 		thread.Id = int32(id)
@@ -287,12 +286,10 @@ func UpdateThread(conn *pgx.ConnPool, slug_or_id string, threadUpdate *models.Th
 			threadUpdate.Message,
 			thread.Id,
 		)
+	} else {
+		return GetThreadById(conn, thread)
 	}
-
-	log.Println("AS_----------------------", row)
-
 	err = scanThread(row, thread)
-	log.Println("AS2_----------------------", thread.Id)
 
 	if err != nil {
 		if err == pgx.ErrNoRows {

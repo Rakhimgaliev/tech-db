@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/Rakhimgaliev/tech-db-forum/project/db"
 	"github.com/Rakhimgaliev/tech-db-forum/project/models"
@@ -109,7 +110,12 @@ func (h handler) GetPost(context *gin.Context) {
 	queryArgs := context.Request.URL.Query()
 	related := queryArgs["related"]
 
-	err = db.GetPostFull(h.conn, related, &postFull)
+	if len(related) == 0 {
+		err = db.GetPostFull(h.conn, related, &postFull)
+	} else {
+		err = db.GetPostFull(h.conn, strings.Split(string(related[0]), ","), &postFull)
+	}
+
 	if err != nil {
 		if err == db.ErrorPostNotFound {
 			context.JSON(404, err)
