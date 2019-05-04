@@ -60,18 +60,35 @@ CREATE TABLE forum_user (
 
 CREATE OR REPLACE FUNCTION create_children() RETURNS trigger as $create_children$
 BEGIN
-   IF NEW.parent IS NULL THEN
-     NEW.children := (ARRAY [NEW.id]);
-     return NEW;
-   end if;
+    IF NEW.parent IS NULL THEN
+        NEW.children := (ARRAY [NEW.id]);
+        return NEW;
+    end if;
 
-   NEW.children := (SELECT array_append(p.children, NEW.id::integer)
-                from post p where p.id = NEW.parent);
-  RETURN NEW;
+    NEW.children := (SELECT array_append(p.children, NEW.id::integer)
+    from post p where p.id = NEW.parent);
+    RETURN NEW;
 END;
 $create_children$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS create_children ON post;
 
 CREATE TRIGGER create_children BEFORE INSERT ON post
-  FOR EACH ROW EXECUTE PROCEDURE create_children();
+    FOR EACH ROW EXECUTE PROCEDURE create_children();
+
+    
+  
+CREATE OR REPLACE FUNCTION edit_post() RETURNS trigger as $edit_post$
+BEGIN
+    IF NEW.message <> OLD.message THEN
+        NEW.edited = true;
+    END IF;
+  
+    return NEW;
+END;
+$edit_post$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS edit_post ON post;
+
+CREATE TRIGGER edit_post BEFORE UPDATE ON post
+    FOR EACH ROW EXECUTE PROCEDURE edit_post();

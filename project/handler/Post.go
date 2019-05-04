@@ -35,7 +35,7 @@ func (h handler) CreatePosts(context *gin.Context) {
 		case db.ErrorPostCreateBadRequest:
 			postsJSON, _ := json.Marshal(posts)
 			context.Data(201, "application/json", postsJSON)
-		case db.ErrorThreadNotFound, db.ErrorForumNotFound:
+		case db.ErrorThreadNotFound, db.ErrorForumNotFound, db.ErrorUserNotFound:
 			context.JSON(404, err)
 		case db.ErrorPostCreateConflict:
 			context.JSON(409, err)
@@ -92,4 +92,62 @@ func (h handler) GetPosts(context *gin.Context) {
 	postsJSON, _ := json.Marshal(posts)
 	context.Data(200, "application/json", postsJSON)
 	return
+}
+
+func (h handler) GetPost(context *gin.Context) {
+	postFull := models.PostFull{}
+	postFull.Post = &models.Post{}
+
+	id, err := strconv.Atoi(context.Param("id"))
+	if err != nil {
+		log.Println(err)
+		context.JSON(500, err)
+		return
+	}
+	postFull.Post.Id = int64(id)
+
+	queryArgs := context.Request.URL.Query()
+	related := queryArgs["related"]
+
+	err = db.GetPostFull(h.conn, related, &postFull)
+	if err != nil {
+		if err == db.ErrorPostNotFound {
+			context.JSON(404, err)
+			return
+		}
+		log.Println(err)
+		context.JSON(500, err)
+		return
+	}
+	postFullJSON, _ := json.Marshal(postFull)
+	context.Data(200, "application/json", postFullJSON)
+}
+
+func (h handler) UpdatePost(context *gin.Context) {
+	post := models.Post{}
+	id, err := strconv.Atoi(context.Param("id"))
+	if err != nil {
+		log.Println(err)
+		context.JSON(500, err)
+		return
+	}
+	post.Id = int64(id)
+
+	postUpdate := models.PostUpdate{}
+	err = BindJSON(context, &postUpdate)
+	if err != nil {
+		context.JSON(400, err)
+		return
+	}
+	err = db.UpdatePost(h.conn, &post, &postUpdate)
+	if err != nil {
+		if err == db.ErrorPostNotFound {
+			context.JSON(404, err)
+			return
+		}
+		context.JSON(500, err)
+		return
+	}
+	postJSON, _ := json.Marshal(post)
+	context.Data(200, "application/json", postJSON)
 }

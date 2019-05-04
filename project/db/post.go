@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -16,6 +17,7 @@ var (
 	ErrorThreadNotFound       = errors.New("Forum already exists")
 	ErrorPostCreateConflict   = errors.New("Post create conflict")
 	ErrorPostCreateBadRequest = errors.New("Post Create Bad Request")
+	ErrorPostNotFound         = errors.New("Post not found")
 )
 
 const (
@@ -61,13 +63,15 @@ const (
 )
 
 func CreatePosts(conn *pgx.ConnPool, threadIdOrSlag string, posts *models.Posts) error {
-	if len(*posts) == 0 {
-		return ErrorPostCreateBadRequest
-	}
-
 	forumSlug, threadId, err := getForumSlugAndThreadIdByThreadSlugOrId(conn, threadIdOrSlag)
 	if err != nil {
+		log.Println("HEEERE-------", err)
+
 		return err
+	}
+
+	if len(*posts) == 0 {
+		return ErrorPostCreateBadRequest
 	}
 
 	transaction, err := conn.Begin()
@@ -93,10 +97,10 @@ func CreatePosts(conn *pgx.ConnPool, threadIdOrSlag string, posts *models.Posts)
 		if pqError, ok := err.(pgx.PgError); ok {
 			switch pqError.Code {
 			case PgxErrorForeignKeyViolation:
-				if pqError.ConstraintName == "post_parent_id_fkey" {
+				if pqError.ConstraintName == "post_parent_fkey" {
 					return ErrorPostCreateConflict
 				}
-				if pqError.ConstraintName == "post_author_fkey" {
+				if pqError.ConstraintName == "post_usernickname_fkey" {
 					return ErrorUserNotFound
 				}
 			}
@@ -270,7 +274,7 @@ func getForumSlugAndThreadIdByThreadSlugOrId(conn *pgx.ConnPool, threadIdOrSlug 
 		err := conn.QueryRow(getForumSlugByThreadId, threadId).Scan(&forumSlug)
 		if err != nil {
 			if err == pgx.ErrNoRows {
-				return forumSlug, int32(threadId), ErrorForumAlreadyExists
+				return forumSlug, int32(threadId), ErrorThreadNotFound
 			}
 			return forumSlug, int32(threadId), err
 		}
@@ -285,4 +289,36 @@ func getForumSlugAndThreadIdByThreadSlugOrId(conn *pgx.ConnPool, threadIdOrSlug 
 	}
 
 	return forumSlug, threadId, nil
+}
+
+const (
+	updatePost = `
+		UPDATE post SET message = $1
+			WHERE id = $2
+			RETURNING id, userNickname, created, edited, message, parent, thread, forum
+	`
+)
+
+func UpdatePost(conn *pgx.ConnPool, post *models.Post, postUpdate *models.PostUpdate) error {
+	var err error
+	if postUpdate.Message == "" {
+		err = getPost(conn, post)
+	} else {
+		parent := sql.NullInt64{}
+		err = conn.QueryRow(updatePost, postUpdate.Message, post.Id).Scan(&post.Id, &post.Author, &post.Created, &post.IsEdited,
+			&post.Message, &parent, &post.Thread, &post.Forum)
+		if parent.Valid {
+			post.Parent = parent.Int64
+		} else {
+			post.Parent = 0
+		}
+	}
+
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return ErrorPostNotFound
+		}
+		return err
+	}
+	return nil
 }

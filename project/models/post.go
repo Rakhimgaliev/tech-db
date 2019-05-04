@@ -13,15 +13,15 @@ type Post struct {
 	Created  time.Time `json:"created,omitempty"`
 }
 
-// type PostFull struct {
-// 	Post   *Post   `json:"post,omitempty"`
-// 	Author *User   `json:"author,omitempty"`
-// 	Thread *Thread `json:"thread,omitempty"`
-// 	Forum  *Forum  `json:"forum,omitempty"`
-// }
+type PostFull struct {
+	Post   *Post   `json:"post,omitempty"`
+	Author *User   `json:"author,omitempty"`
+	Thread *Thread `json:"thread,omitempty"`
+	Forum  *Forum  `json:"forum,omitempty"`
+}
 
-// type PostUpdate struct {
-// 	Message string `json:"message,omitempty"`
-// }
+type PostUpdate struct {
+	Message string `json:"message,omitempty"`
+}
 
 type Posts []*Post
