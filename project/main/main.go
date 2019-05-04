@@ -44,6 +44,8 @@ func main() {
 
 	router.POST("/api/thread/:slug_or_id/create", handler.CreatePosts)
 	router.GET("/api/thread/:slug_or_id/posts", handler.GetPosts)
+	router.POST("/api/post/:id/details", handler.UpdatePost)
+	router.GET("/api/post/:id/details", handler.GetPost)
 
 	router.Run("127.0.0.1:5000")
 }
