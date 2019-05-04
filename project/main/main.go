@@ -20,6 +20,8 @@ var dbConfig = pgx.ConnConfig{
 }
 
 func main() {
+	gin.SetMode(gin.ReleaseMode)
+
 	router := gin.Default()
 
 	handler := handler.NewConnPool(&dbConfig)
