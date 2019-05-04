@@ -24,6 +24,9 @@ func main() {
 
 	handler := handler.NewConnPool(&dbConfig)
 
+	router.GET("/api/service/status", handler.Status)
+	router.POST("/api/service/clear", handler.Clear)
+
 	router.POST("/api/forum/:slug", func(c *gin.Context) {
 		if c.Param("slug") == "create" {
 			handler.CreateForum(c)
