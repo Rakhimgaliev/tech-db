@@ -1,7 +1,6 @@
 package db
 
 import (
-	"log"
 	"strconv"
 
 	"github.com/Rakhimgaliev/tech-db-forum/project/models"
@@ -33,7 +32,6 @@ const (
 
 func CreateThreadVote(conn *pgx.ConnPool, threadSlugOrId string, thread *models.Thread, vote *models.Vote) error {
 	if threadId, err := strconv.Atoi(threadSlugOrId); err != nil {
-		log.Println(threadSlugOrId, "_---------------------------")
 		threadID, err := GetThreadIdBySlug(conn, threadSlugOrId)
 
 		if err != nil {
@@ -46,7 +44,6 @@ func CreateThreadVote(conn *pgx.ConnPool, threadSlugOrId string, thread *models.
 	} else {
 		thread.Id = int32(threadId)
 	}
-	log.Println("---------------------------------------:")
 
 	var voteBool = false
 	if vote.Voice == 1 {
@@ -66,7 +63,6 @@ func CreateThreadVote(conn *pgx.ConnPool, threadSlugOrId string, thread *models.
 		return err
 	}
 
-	log.Println(vote.Nickname, voteBool, thread.Id)
 	_, err = transaction.Exec(createThreadVote, vote.Nickname, voteBool, thread.Id)
 	if err != nil {
 		if txErr := transaction.Rollback(); txErr != nil {
@@ -82,7 +78,6 @@ func CreateThreadVote(conn *pgx.ConnPool, threadSlugOrId string, thread *models.
 	}
 
 	err = updateThreadVotesCount(transaction, thread)
-	log.Println("error:", err)
 	if err != nil {
 		if txErr := transaction.Rollback(); txErr != nil {
 			return txErr
@@ -100,7 +95,6 @@ func CreateThreadVote(conn *pgx.ConnPool, threadSlugOrId string, thread *models.
 func GetThreadIdBySlug(conn *pgx.ConnPool, threadSlug string) (int, error) {
 	var threadId int
 	err := conn.QueryRow(getThreadIdBySlug, threadSlug).Scan(&threadId)
-	log.Println("------------HERE WHAT: ", err)
 	return threadId, err
 }
 

@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"log"
 	"strconv"
 	"strings"
 
@@ -30,7 +29,6 @@ func (h handler) CreatePosts(context *gin.Context) {
 	}
 
 	err = db.CreatePosts(h.conn, context.Param("slug_or_id"), &posts)
-	log.Println(err, posts)
 	if err != nil {
 		switch err {
 		case db.ErrorPostCreateBadRequest:
@@ -79,7 +77,6 @@ func (h handler) GetPosts(context *gin.Context) {
 	err := db.GetPosts(h.conn, context.Param("slug_or_id"),
 		limit, desc,
 		since, sort, &posts)
-	log.Println("-------------------err: ", err)
 
 	if err != nil {
 		if err == db.ErrorThreadNotFound {
@@ -89,7 +86,6 @@ func (h handler) GetPosts(context *gin.Context) {
 		context.JSON(500, err)
 		return
 	}
-	log.Println("posts count: ", len(posts))
 	postsJSON, _ := json.Marshal(posts)
 	context.Data(200, "application/json", postsJSON)
 	return
@@ -101,7 +97,6 @@ func (h handler) GetPost(context *gin.Context) {
 
 	id, err := strconv.Atoi(context.Param("id"))
 	if err != nil {
-		log.Println(err)
 		context.JSON(500, err)
 		return
 	}
@@ -121,7 +116,6 @@ func (h handler) GetPost(context *gin.Context) {
 			context.JSON(404, err)
 			return
 		}
-		log.Println(err)
 		context.JSON(500, err)
 		return
 	}
@@ -133,7 +127,6 @@ func (h handler) UpdatePost(context *gin.Context) {
 	post := models.Post{}
 	id, err := strconv.Atoi(context.Param("id"))
 	if err != nil {
-		log.Println(err)
 		context.JSON(500, err)
 		return
 	}

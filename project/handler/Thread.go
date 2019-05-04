@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"log"
 	"strconv"
 
 	"github.com/Rakhimgaliev/tech-db-forum/project/db"
@@ -87,7 +86,6 @@ func (h handler) ThreadDetails(context *gin.Context) {
 				context.JSON(404, err)
 				return
 			}
-			log.Println(err)
 			context.JSON(500, err)
 			return
 		}
@@ -102,7 +100,6 @@ func (h handler) ThreadDetails(context *gin.Context) {
 			context.JSON(404, err)
 			return
 		}
-		log.Println(err)
 		context.JSON(500, err)
 	}
 	threadJSON, _ := json.Marshal(thread)
@@ -116,7 +113,6 @@ func (h handler) ThreadUpdate(context *gin.Context) {
 	context.BindJSON(&threadUpdate)
 
 	err := db.UpdateThread(h.conn, context.Param("slug_or_id"), &threadUpdate, &thread)
-	log.Println("---------------->", err)
 	if err != nil {
 		if err == db.ErrorThreadNotFound {
 			context.JSON(404, err)

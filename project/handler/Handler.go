@@ -35,7 +35,6 @@ func NewConnPool(config *pgx.ConnConfig) *handler {
 func (h *handler) Clear(context *gin.Context) {
 	err := db.Clear(h.conn)
 	if err != nil {
-		log.Println("HERE:", err)
 		return
 	}
 
@@ -48,7 +47,6 @@ func (h *handler) Status(context *gin.Context) {
 	status := models.Status{}
 	err := db.Status(h.conn, &status)
 	if err != nil {
-		log.Println("HERE:", err)
 		return
 	}
 	statusJSON, _ := json.Marshal(status)

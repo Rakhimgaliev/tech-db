@@ -3,7 +3,6 @@ package db
 import (
 	"database/sql"
 	"errors"
-	"log"
 	"strconv"
 
 	"github.com/Rakhimgaliev/tech-db-forum/project/models"
@@ -98,7 +97,6 @@ const (
 func scanThread(row *pgx.Row, thread *models.Thread) error {
 	threadSlug := sql.NullString{}
 	err := row.Scan(&thread.Id, &thread.Title, &thread.Author, &thread.Forum, &thread.Message, &thread.Votes, &threadSlug, &thread.Created)
-	log.Println("error on Scanning:", err)
 	if err != nil {
 		return err
 	}
@@ -179,7 +177,6 @@ func CreateThread(conn *pgx.ConnPool, thread *models.Thread) error {
 func GetThreadBySlug(conn *pgx.ConnPool, thread *models.Thread) error {
 	err := conn.QueryRow(getThreadBySlug, thread.Slug).
 		Scan(&thread.Id, &thread.Slug, &thread.Author, &thread.Created, &thread.Forum, &thread.Title, &thread.Message, &thread.Votes)
-	log.Println(err)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return ErrorThreadNotFound
@@ -192,7 +189,6 @@ func GetThreadBySlug(conn *pgx.ConnPool, thread *models.Thread) error {
 func GetThreadById(conn *pgx.ConnPool, thread *models.Thread) error {
 	err := conn.QueryRow(getThreadById, thread.Id).
 		Scan(&thread.Id, &thread.Slug, &thread.Author, &thread.Created, &thread.Forum, &thread.Title, &thread.Message, &thread.Votes)
-	log.Println(err)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return ErrorThreadNotFound
@@ -228,7 +224,6 @@ func GetThreads(conn *pgx.ConnPool, slug string, limit int, since string, desc b
 	}
 
 	if err != nil {
-		log.Println("rows scan error: ", err)
 		return err
 	}
 
@@ -264,8 +259,6 @@ func UpdateThread(conn *pgx.ConnPool, slug_or_id string, threadUpdate *models.Th
 		}
 		thread.Id = int32(id)
 	}
-
-	log.Println("SSS", threadUpdate.Message, threadUpdate.Title)
 
 	if threadUpdate.Message != "" && threadUpdate.Title != "" {
 		row = conn.QueryRow(

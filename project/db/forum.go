@@ -2,7 +2,6 @@ package db
 
 import (
 	"errors"
-	"log"
 
 	"github.com/Rakhimgaliev/tech-db-forum/project/models"
 
@@ -64,7 +63,6 @@ func CreateForum(conn *pgx.ConnPool, forum *models.Forum) error {
 func GetForumBySlug(conn *pgx.ConnPool, forum *models.Forum) error {
 	err := conn.QueryRow(getForumBySlug, (*forum).Slug).
 		Scan(&(*forum).Title, &(*forum).User, &(*forum).Slug, &(*forum).Posts, &(*forum).Threads)
-	log.Println(err)
 	if err == pgx.ErrNoRows {
 		return ErrorForumNotFound
 	}

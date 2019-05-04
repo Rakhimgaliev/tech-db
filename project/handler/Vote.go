@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"log"
 
 	"github.com/Rakhimgaliev/tech-db-forum/project/db"
 	"github.com/Rakhimgaliev/tech-db-forum/project/models"
@@ -20,7 +19,6 @@ func (h handler) CreateThreadVote(context *gin.Context) {
 	}
 
 	err = db.CreateThreadVote(h.conn, context.Param("slug_or_id"), &thread, &vote)
-	log.Println("HERE: ", err)
 	if err != nil {
 		switch err {
 		case db.ErrorThreadNotFound:

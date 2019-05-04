@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"log"
 	"strconv"
 
 	"github.com/Rakhimgaliev/tech-db-forum/project/db"
@@ -15,7 +14,6 @@ func (h handler) CreateUser(context *gin.Context) {
 
 	err := context.BindJSON(user)
 	if err != nil {
-		log.Println(err)
 		return
 	}
 	user.Nickname = context.Param("nickname")
@@ -36,7 +34,6 @@ func (h handler) CreateUser(context *gin.Context) {
 			return
 		} else {
 			context.JSON(500, err)
-			log.Println(err)
 			return
 		}
 	}
@@ -88,18 +85,6 @@ func (h handler) UpdateUser(context *gin.Context) {
 
 	userJSON, _ := json.Marshal(user)
 	context.Data(200, "application/json", userJSON)
-	// log.Println(user)
-
-	// err := db.GetUserByNickname(h.conn, user)
-	// if err != nil {
-	// 	if err == db.ErrorUserNotFound {
-	// 		context.JSON(404, err)
-	// 		return
-	// 	}
-	// 	context.JSON(500, err)
-	// 	return
-	// }
-
 }
 
 func (h handler) GetForumUsers(context *gin.Context) {

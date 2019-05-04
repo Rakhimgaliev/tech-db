@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -65,8 +64,6 @@ const (
 func CreatePosts(conn *pgx.ConnPool, threadIdOrSlag string, posts *models.Posts) error {
 	forumSlug, threadId, err := getForumSlugAndThreadIdByThreadSlugOrId(conn, threadIdOrSlag)
 	if err != nil {
-		log.Println("HEEERE-------", err)
-
 		return err
 	}
 

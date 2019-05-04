@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"log"
 
 	"github.com/Rakhimgaliev/tech-db-forum/project/db"
 	"github.com/Rakhimgaliev/tech-db-forum/project/models"
@@ -15,14 +14,11 @@ func (h handler) CreateForum(context *gin.Context) {
 
 	err := context.BindJSON(&forum)
 	if err != nil {
-		log.Println(err)
 		return
 	}
 
 	err = db.CreateForum(h.conn, forum)
-	log.Println("FORUM: ", forum, "  \n ERR", err)
 	if err != nil {
-		log.Println(err)
 		switch err {
 		case db.ErrorUserNotFound:
 			context.JSON(404, err)

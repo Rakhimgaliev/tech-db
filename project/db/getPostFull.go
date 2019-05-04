@@ -2,7 +2,6 @@ package db
 
 import (
 	"database/sql"
-	"log"
 
 	"github.com/Rakhimgaliev/tech-db-forum/project/models"
 	"github.com/jackc/pgx"
@@ -24,8 +23,6 @@ func GetPostFull(conn *pgx.ConnPool, related []string, postFull *models.PostFull
 		}
 	}
 
-	log.Println("withUser, withThread, withForum ", withUser, withThread, withForum)
-
 	var err error
 	if !withUser && !withThread && !withForum {
 		err = getPost(conn, postFull.Post)
@@ -44,8 +41,6 @@ func GetPostFull(conn *pgx.ConnPool, related []string, postFull *models.PostFull
 	} else if withUser && withThread && withForum {
 		err = getPostWithUserThreadForum(conn, postFull)
 	}
-
-	log.Println("----------", err)
 
 	if err != nil {
 		if err == pgx.ErrNoRows {

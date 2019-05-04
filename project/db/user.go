@@ -2,7 +2,6 @@ package db
 
 import (
 	"errors"
-	"log"
 
 	"github.com/Rakhimgaliev/tech-db-forum/project/models"
 	"github.com/jackc/pgx"
@@ -105,7 +104,6 @@ const (
 func CreateUser(conn *pgx.ConnPool, user *models.User) error {
 	err := conn.QueryRow(createUser, user.Nickname, user.Fullname, user.About, user.Email).
 		Scan(&user.Nickname, &user.Fullname, &user.About, &user.Email)
-	log.Println(err)
 
 	if err != nil {
 		if pqError, ok := err.(pgx.PgError); ok {
@@ -148,7 +146,6 @@ func GetUserByEmailOrNickname(conn *pgx.ConnPool, email string, nickname string)
 func GetUserByNickname(conn *pgx.ConnPool, user *models.User) error {
 	err := conn.QueryRow(getUserByNickname, user.Nickname).
 		Scan(&user.Nickname, &user.Fullname, &user.About, &user.Email)
-	log.Println(err)
 
 	if err == pgx.ErrNoRows {
 		return ErrorUserNotFound
@@ -176,7 +173,6 @@ func UpdateUser(conn *pgx.ConnPool, user *models.User, updateUser *models.UserUp
 
 	err = conn.QueryRow(updateUserCommand, user.Nickname, user.Fullname, user.About, user.Email).
 		Scan(&user.Nickname, &user.Fullname, &user.About, &user.Email)
-	log.Println(err)
 
 	if err != nil {
 		if pqError, ok := err.(pgx.PgError); ok {
@@ -191,7 +187,6 @@ func UpdateUser(conn *pgx.ConnPool, user *models.User, updateUser *models.UserUp
 }
 
 func GetUsersByForum(conn *pgx.ConnPool, slug string, limit int, since string, desc bool, users *models.Users) error {
-	log.Println("slug", slug, "limit", limit, "desc", desc, "since", since)
 	if !ForumExistsBySlug(conn, slug) {
 		return ErrorForumNotFound
 	}
@@ -220,8 +215,6 @@ func GetUsersByForum(conn *pgx.ConnPool, slug string, limit int, since string, d
 		}
 	}
 
-	log.Println("--------", err)
-
 	if err != nil {
 		return err
 	}
@@ -230,7 +223,6 @@ func GetUsersByForum(conn *pgx.ConnPool, slug string, limit int, since string, d
 
 	for rows.Next() {
 		user := &models.User{}
-		log.Println("-----ASDADS---")
 
 		err := rows.Scan(&user.Nickname, &user.Fullname, &user.About, &user.Email)
 		if err != nil {

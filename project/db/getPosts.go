@@ -1,7 +1,6 @@
 package db
 
 import (
-	"log"
 	"strconv"
 
 	"github.com/Rakhimgaliev/tech-db-forum/project/models"
@@ -171,8 +170,6 @@ func GenerateGetPostsQuery(conn *pgx.ConnPool,
 
 	var rows *pgx.Rows
 	var err error
-
-	log.Println("id:", id, "limit:", limit, desc, since, sort)
 
 	switch sort {
 	case "":
