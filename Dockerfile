@@ -7,21 +7,30 @@ ENV TZ=Europe/Moscow
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 USER root
-RUN apt-get -y update && apt-get install -y --no-install-recommends apt-utils
-RUN apt install -y golang-1.10
-RUN apt install -y git
+ENV DEBIAN_FRONTEND 'noninteractive'
 
-ENV GOROOT /usr/lib/go-1.10
+RUN apt-get update -y
+RUN apt-get install -y --no-install-recommends apt-utils
+
+RUN apt-get install -y wget
+RUN apt-get install -y git
+
+RUN wget https://dl.google.com/go/go1.12.5.linux-amd64.tar.gz
+RUN tar -C /usr/local -xzf go1.12.5.linux-amd64.tar.gz
+
+ENV GOROOT /usr/local/go
 ENV GOPATH /opt/go
 ENV PATH $GOROOT/bin:$GOPATH/bin:/usr/local/go/bin:$PATH
 
-WORKDIR $GOPATH/src/github.com/Rakhimgaliev/tech-db-forum/
-ADD . $GOPATH/src/github.com/Rakhimgaliev/tech-db-forum/
-RUN go install ./forum/main/
+ENV POSTGRESQLVERSION 10
+RUN apt-get install -y postgresql-$POSTGRESQLVERSION
+
+WORKDIR /tech-db-forum
+COPY . .
+
 EXPOSE 5000
 
-ENV POSTGRESQLVERSION 10
-RUN apt install -y postgresql-$POSTGRESQLVERSION
+RUN go get -u
 
 USER postgres
 RUN /etc/init.d/postgresql start &&\
@@ -39,5 +48,4 @@ EXPOSE 5432
 
 VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
 
-WORKDIR $GOPATH/bin/
-CMD service postgresql start  && main
+CMD service postgresql start && go run main.go
