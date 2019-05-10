@@ -5,7 +5,7 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/Rakhimgaliev/tech-db-forum/project/models"
+	"github.com/Rakhimgaliev/tech-db/project/models"
 	"github.com/jackc/pgx"
 )
 
@@ -175,8 +175,12 @@ func CreateThread(conn *pgx.ConnPool, thread *models.Thread) error {
 }
 
 func GetThreadBySlug(conn *pgx.ConnPool, thread *models.Thread) error {
+	threadSlug := sql.NullString{}
 	err := conn.QueryRow(getThreadBySlug, thread.Slug).
-		Scan(&thread.Id, &thread.Slug, &thread.Author, &thread.Created, &thread.Forum, &thread.Title, &thread.Message, &thread.Votes)
+		Scan(&thread.Id, &threadSlug, &thread.Author, &thread.Created, &thread.Forum, &thread.Title, &thread.Message, &thread.Votes)
+	if threadSlug.Valid {
+		thread.Slug = threadSlug.String
+	}
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return ErrorThreadNotFound
@@ -187,8 +191,13 @@ func GetThreadBySlug(conn *pgx.ConnPool, thread *models.Thread) error {
 }
 
 func GetThreadById(conn *pgx.ConnPool, thread *models.Thread) error {
+	threadSlug := sql.NullString{}
 	err := conn.QueryRow(getThreadById, thread.Id).
-		Scan(&thread.Id, &thread.Slug, &thread.Author, &thread.Created, &thread.Forum, &thread.Title, &thread.Message, &thread.Votes)
+		Scan(&thread.Id, &threadSlug, &thread.Author, &thread.Created, &thread.Forum, &thread.Title, &thread.Message, &thread.Votes)
+	if threadSlug.Valid {
+		thread.Slug = threadSlug.String
+	}
+
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return ErrorThreadNotFound

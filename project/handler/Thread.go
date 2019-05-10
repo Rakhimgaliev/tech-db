@@ -2,10 +2,11 @@ package handler
 
 import (
 	"encoding/json"
+	"log"
 	"strconv"
 
-	"github.com/Rakhimgaliev/tech-db-forum/project/db"
-	"github.com/Rakhimgaliev/tech-db-forum/project/models"
+	"github.com/Rakhimgaliev/tech-db/project/db"
+	"github.com/Rakhimgaliev/tech-db/project/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -100,7 +101,9 @@ func (h handler) ThreadDetails(context *gin.Context) {
 			context.JSON(404, err)
 			return
 		}
+		log.Println(err)
 		context.JSON(500, err)
+		return
 	}
 	threadJSON, _ := json.Marshal(thread)
 	context.Data(200, "application/json", threadJSON)

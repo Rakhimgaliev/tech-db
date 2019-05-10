@@ -3,8 +3,8 @@ package handler
 import (
 	"encoding/json"
 
-	"github.com/Rakhimgaliev/tech-db-forum/project/db"
-	"github.com/Rakhimgaliev/tech-db-forum/project/models"
+	"github.com/Rakhimgaliev/tech-db/project/db"
+	"github.com/Rakhimgaliev/tech-db/project/models"
 	"github.com/gin-gonic/gin"
 )
 

@@ -6,7 +6,7 @@ package main
 // curl --header "Content-Type: application/json"   --request POST   --data '{"fullname":"qsweqwe","about":"asdaads","email":"jashhasd@mail.ru"}'   http://localhost:5000/api/user/teuumikr/create
 
 import (
-	"github.com/Rakhimgaliev/tech-db-forum/project/handler"
+	"github.com/Rakhimgaliev/tech-db/project/handler"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx"
 )

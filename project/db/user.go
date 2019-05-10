@@ -3,7 +3,7 @@ package db
 import (
 	"errors"
 
-	"github.com/Rakhimgaliev/tech-db-forum/project/models"
+	"github.com/Rakhimgaliev/tech-db/project/models"
 	"github.com/jackc/pgx"
 )
 

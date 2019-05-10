@@ -6,8 +6,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/Rakhimgaliev/tech-db-forum/project/db"
-	"github.com/Rakhimgaliev/tech-db-forum/project/models"
+	"github.com/Rakhimgaliev/tech-db/project/db"
+	"github.com/Rakhimgaliev/tech-db/project/models"
 	"github.com/jackc/pgx"
 )
 
