@@ -93,13 +93,18 @@ DROP TRIGGER IF EXISTS edit_post ON post;
 CREATE TRIGGER edit_post BEFORE UPDATE ON post
     FOR EACH ROW EXECUTE PROCEDURE edit_post();
 
--- for forum
+-- for forum 
+-- increase time
+-- CREATE index idx_forum_slug on forum(slug);
 
 -- for user
 CREATE index idx_user_nickname on "user"(nickname);
 CREATE index idx_user_email on "user"(email);
+
+-- for forum_user
 CREATE index idx_forumUser_forum on forum_user(nickname);
 CREATE index idx_forumUser_user on forum_user(forum);
+
 
 -- for thread
 CREATE index idx_thread_id on thread(id);
