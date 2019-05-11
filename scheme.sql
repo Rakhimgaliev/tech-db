@@ -92,3 +92,22 @@ DROP TRIGGER IF EXISTS edit_post ON post;
 
 CREATE TRIGGER edit_post BEFORE UPDATE ON post
     FOR EACH ROW EXECUTE PROCEDURE edit_post();
+
+-- for forum
+
+-- for user
+CREATE index idx_user_nickname on "user"(nickname);
+CREATE index idx_user_email on "user"(email);
+CREATE index idx_forumUser_forum on forum_user(nickname);
+CREATE index idx_forumUser_user on forum_user(forum);
+
+-- for thread
+CREATE index idx_thread_id on thread(id);
+CREATE index idx_thread_slug on thread(slug);
+CREATE index idx_thread_forum on thread(forum);
+
+-- for post
+CREATE index idx_post_thread on post(thread);
+
+-- for vote
+CREATE index idx_vote_thread on vote(threadId);
