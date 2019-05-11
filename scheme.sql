@@ -105,9 +105,11 @@ CREATE index idx_forumUser_user on forum_user(forum);
 CREATE index idx_thread_id on thread(id);
 CREATE index idx_thread_slug on thread(slug);
 CREATE index idx_thread_forum on thread(forum);
+CREATE index idx_thread_created on thread(created);
 
 -- for post
 CREATE index idx_post_thread on post(thread);
+CREATE index idx_post_created on post(created);
 
 -- for vote
 CREATE index idx_vote_thread on vote(threadId);
