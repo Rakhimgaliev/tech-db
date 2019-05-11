@@ -53,7 +53,7 @@ CREATE TABLE vote (
 
 
 CREATE TABLE forum_user (
-    nickname    citext  references "user",
+    nickname    citext  references "user" COLLATE "POSIX",
     forum   citext  references forum,
     CONSTRAINT  uniqueForumUser UNIQUE (nickname, forum)
 );
@@ -104,7 +104,7 @@ CREATE index idx_user_email on "user"(email);
 -- for forum_user
 CREATE index idx_forumUser_forum on forum_user(nickname);
 CREATE index idx_forumUser_user on forum_user(forum);
-
+CREATE index idx_forumUser_forum_user on forum_user(forum, nickname);
 
 -- for thread
 CREATE index idx_thread_id on thread(id);

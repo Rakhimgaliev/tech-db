@@ -70,7 +70,7 @@ const (
 		SELECT u.nickname, u.fullname, u.about, u.email
 			FROM forum_user fu
 			JOIN "user" u ON fu.nickname = u.nickname
-			WHERE fu.forum = $1 AND u.nickname > $2
+			WHERE fu.forum = $1 AND fu.nickname > $2
 			ORDER BY u.nickname
 			LIMIT $3
 	`
@@ -79,7 +79,7 @@ const (
 		SELECT u.nickname, u.fullname, u.about, u.email
 			FROM forum_user fu
 			JOIN "user" u ON fu.nickname = u.nickname
-			WHERE fu.forum = $1 AND u.nickname < $2
+			WHERE fu.forum = $1 AND fu.nickname < $2
 			ORDER BY u.nickname DESC
 			LIMIT $3
 	`
@@ -88,7 +88,7 @@ const (
 		SELECT u.nickname, u.fullname, u.about, u.email
 			FROM forum_user fu
 			JOIN "user" u ON fu.nickname = u.nickname
-			WHERE fu.forum = $1 AND u.nickname > $2
+			WHERE fu.forum = $1 AND fu.nickname > $2
 			ORDER BY u.nickname
 	`
 
@@ -96,7 +96,7 @@ const (
 		SELECT u.nickname, u.fullname, u.about, u.email
 			FROM forum_user fu
 			JOIN "user" u ON fu.nickname = u.nickname
-			WHERE fu.forum = $1 AND u.nickname < $2
+			WHERE fu.forum = $1 AND fu.nickname < $2
 			ORDER BY u.nickname DESC
 	`
 )
